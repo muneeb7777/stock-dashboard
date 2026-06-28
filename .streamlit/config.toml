@@ -1,2 +1,4 @@
-[browser]
-gatherUsageStats = false
+[ui] 
+hideTopBar = true 
+[ui] 
+hideTopBar = true 
