@@ -50,10 +50,4 @@ for i, (ticker, name) in enumerate(INDEX_TICKERS.items()):
                 f"{pct:+.2f}%" if pct is not None else None,
             )
 
-st.divider()
-st.info(
-    "Tip: set `GROQ_API_KEY` and `FRED_API_KEY` in a `.env` file at the "
-    "project root to enable AI analysis and macro indicators."
-)
-
 render_footer()

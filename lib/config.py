@@ -1,6 +1,8 @@
 """Shared configuration, constants, and the compliance disclosure string."""
 
 import os
+
+import streamlit as st
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,20 +17,27 @@ DISCLOSURE = (
 )
 
 
+def get_secret(key):
+    try:
+        return st.secrets[key]
+    except Exception:
+        return os.getenv(key)
+
+
 def get_anthropic_key():
-    return os.environ.get("ANTHROPIC_API_KEY", "").strip() or None
+    return (get_secret("ANTHROPIC_API_KEY") or "").strip() or None
 
 
 def get_fred_key():
-    return os.environ.get("FRED_API_KEY", "").strip() or None
+    return (get_secret("FRED_API_KEY") or "").strip() or None
 
 
 def get_gemini_key():
-    return os.environ.get("GEMINI_API_KEY", "").strip() or None
+    return (get_secret("GEMINI_API_KEY") or "").strip() or None
 
 
 def get_groq_key():
-    return os.environ.get("GROQ_API_KEY", "").strip() or None
+    return (get_secret("GROQ_API_KEY") or "").strip() or None
 
 
 def fmt_large_number(value, currency="$"):

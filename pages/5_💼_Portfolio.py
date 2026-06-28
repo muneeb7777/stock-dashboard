@@ -187,7 +187,7 @@ st.divider()
 st.subheader("AI analysis")
 
 if not claude_analyst.is_configured():
-    st.info("Set `GROQ_API_KEY` in your `.env` file to enable AI-assisted portfolio analysis.")
+    st.info("AI analysis is unavailable. Set `GROQ_API_KEY` in Streamlit secrets to enable it.")
 else:
     if st.button("Generate portfolio analysis"):
         holdings_summary = "\n".join(

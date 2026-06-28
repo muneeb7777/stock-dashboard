@@ -961,7 +961,7 @@ st.divider()
 st.subheader("AI analysis")
 
 if not claude_analyst.is_configured():
-    st.info("Set `GROQ_API_KEY` in your `.env` file to enable AI-assisted analysis.")
+    st.info("AI analysis is unavailable. Set `GROQ_API_KEY` in Streamlit secrets to enable it.")
 
 tab1, tab2, tab3 = st.tabs(["Bull / Bear case", "Deep analysis", "Recent headlines"])
 

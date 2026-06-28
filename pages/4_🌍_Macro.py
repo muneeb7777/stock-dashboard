@@ -13,8 +13,8 @@ st.title("🌍 Macro")
 
 if not fred_available():
     st.info(
-        "Set `FRED_API_KEY` in your `.env` file to enable macro indicators. "
-        "You can get a free key at https://fred.stlouisfed.org/docs/api/api_key.html"
+        "Macro indicators require a FRED API key. Set `FRED_API_KEY` in Streamlit secrets "
+        "to enable this page. You can get a free key at https://fred.stlouisfed.org/docs/api/api_key.html"
     )
     render_footer()
     st.stop()
@@ -76,7 +76,7 @@ st.divider()
 st.subheader("Macro pulse-check")
 
 if not claude_analyst.is_configured():
-    st.info("Set `GROQ_API_KEY` in your `.env` file to enable AI-assisted macro summaries.")
+    st.info("AI macro summaries are unavailable. Set `GROQ_API_KEY` in Streamlit secrets to enable them.")
 else:
     if st.button("Generate macro pulse-check"):
         if not snapshot:
