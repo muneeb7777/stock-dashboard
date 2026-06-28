@@ -1,0 +1,253 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background: #131722;
+  overflow: hidden;
+}
+
+/* Header */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 12px 20px;
+  background: #161a25;
+  border-bottom: 1px solid #232734;
+  flex-shrink: 0;
+}
+
+.header-symbol {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.symbol-name {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #e8eaed;
+}
+
+.status-pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #232734;
+  color: #787b86;
+}
+
+.status-pill.status-live {
+  background: rgba(38, 166, 154, 0.12);
+  color: #26a69a;
+}
+
+.status-pill.status-connecting,
+.status-pill.status-reconnecting {
+  background: rgba(255, 152, 0, 0.12);
+  color: #ff9800;
+}
+
+.header-price {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.price-value {
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.price-change {
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.header-price.positive .price-value,
+.header-price.positive .price-change {
+  color: #26a69a;
+}
+
+.header-price.negative .price-value,
+.header-price.negative .price-change {
+  color: #ef5350;
+}
+
+.header-stats {
+  display: flex;
+  gap: 24px;
+  margin-left: auto;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.stat-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5d6068;
+}
+
+.stat-value {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: #d1d4dc;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: #161a25;
+  border-bottom: 1px solid #232734;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 22px;
+  background: #232734;
+  flex-shrink: 0;
+}
+
+.symbol-search {
+  display: flex;
+  gap: 6px;
+}
+
+.symbol-search input {
+  background: #0d1017;
+  border: 1px solid #2a2e39;
+  color: #e8eaed;
+  padding: 7px 12px;
+  border-radius: 999px;
+  width: 130px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.symbol-search input:focus {
+  border-color: #2962ff;
+}
+
+.symbol-search button {
+  background: #2962ff;
+  border: none;
+  color: #fff;
+  padding: 7px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.symbol-search button:hover {
+  background: #1e53e5;
+}
+
+.timeframe-bar,
+.indicator-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tf-btn,
+.ind-btn {
+  background: transparent;
+  border: 1px solid #2a2e39;
+  color: #8b8f99;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tf-btn:hover,
+.ind-btn:hover {
+  border-color: #4c5260;
+  color: #e8eaed;
+}
+
+.tf-btn.active,
+.ind-btn.active {
+  background: #2962ff;
+  border-color: #2962ff;
+  color: #fff;
+}
+
+/* Chart */
+.chart-area {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  width: 100%;
+}
+
+.chart-container {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+/* Drawing toolbar */
+.drawing-toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  background: #161a25;
+  border-right: 1px solid #232734;
+  flex-shrink: 0;
+}
+
+.draw-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #8b8f99;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.draw-btn:hover {
+  color: #e8eaed;
+  border-color: #2a2e39;
+}
+
+.draw-btn.active {
+  background: #2962ff;
+  border-color: #2962ff;
+  color: #fff;
+}
