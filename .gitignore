@@ -6,3 +6,8 @@ venv/
 .DS_Store
 data/portfolio.json
 .streamlit/secrets.toml
+.env 
+__pycache__/ 
+*.pyc 
+venv/ 
+.streamlit/secrets.toml 
