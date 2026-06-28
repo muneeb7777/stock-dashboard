@@ -9,3 +9,4 @@ google-generativeai==0.8.6
 groq==1.4.0
 requests==2.34.2
 grpcio==1.62.1 
+PyPortfolioOpt==1.5.5 
