@@ -12,23 +12,17 @@ import tempfile
 import time
 
 import pandas as pd
-import requests
 import streamlit as st
 import yfinance as yf
+from curl_cffi import requests as curl_requests
 
 # ---------------------------------------------------------------------------
 # Network helpers
 # ---------------------------------------------------------------------------
 
-# Shared session with a browser-like User-Agent reduces Yahoo Finance 429 errors.
-_YF_SESSION = requests.Session()
-_YF_SESSION.headers.update({
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    ),
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-})
+# curl_cffi session impersonating Chrome 110 — bypasses Yahoo Finance TLS
+# fingerprinting that blocks plain requests/urllib on cloud IPs.
+_YF_SESSION = curl_requests.Session(impersonate="chrome110")
 
 # Cache timezone data in the system temp dir so it's always writable
 # (avoids permission errors on Streamlit Cloud / read-only filesystems).
