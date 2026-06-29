@@ -6,13 +6,15 @@ import pandas as pd
 import streamlit as st
 import yfinance as yf
 
+from lib.market_data import _YF_SESSION
+
 WHALE_PREMIUM = 500_000
 
 
 @st.cache_data(ttl=300, show_spinner=False)
 def get_expirations(ticker: str) -> list[str]:
     try:
-        return list(yf.Ticker(ticker).options)
+        return list(yf.Ticker(ticker, session=_YF_SESSION).options)
     except Exception:
         return []
 
@@ -20,7 +22,7 @@ def get_expirations(ticker: str) -> list[str]:
 @st.cache_data(ttl=300, show_spinner=False)
 def get_option_chain(ticker: str, expiry: str) -> pd.DataFrame:
     try:
-        chain = yf.Ticker(ticker).option_chain(expiry)
+        chain = yf.Ticker(ticker, session=_YF_SESSION).option_chain(expiry)
     except Exception:
         return pd.DataFrame()
 

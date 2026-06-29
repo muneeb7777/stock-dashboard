@@ -13,7 +13,15 @@ import requests
 import streamlit as st
 import yfinance as yf
 
-HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; StockMarketAnalyst/1.0)"}
+from lib.market_data import _YF_SESSION
+
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+}
 
 
 def _extract_item(raw: dict) -> dict | None:
@@ -74,7 +82,7 @@ def _extract_item(raw: dict) -> dict | None:
 @st.cache_data(ttl=300, show_spinner=False)
 def _yf_news(ticker: str, limit: int) -> list[dict]:
     try:
-        raw_items = yf.Ticker(ticker).news or []
+        raw_items = yf.Ticker(ticker, session=_YF_SESSION).news or []
     except Exception:
         raw_items = []
 

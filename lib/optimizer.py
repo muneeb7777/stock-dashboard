@@ -13,6 +13,8 @@ import streamlit as st
 import yfinance as yf
 from pypfopt import EfficientFrontier, expected_returns, risk_models
 
+from lib.market_data import _YF_SESSION
+
 TRADING_DAYS_PER_YEAR = 252
 
 
@@ -22,7 +24,7 @@ def fetch_price_history(tickers: tuple[str, ...], period: str = "2y") -> pd.Data
     if not tickers:
         return pd.DataFrame()
     try:
-        data = yf.download(list(tickers), period=period, auto_adjust=True, progress=False)
+        data = yf.download(list(tickers), period=period, auto_adjust=True, progress=False, session=_YF_SESSION)
     except Exception:
         return pd.DataFrame()
 

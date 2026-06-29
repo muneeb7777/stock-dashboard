@@ -14,6 +14,7 @@ import pandas as pd
 import streamlit as st
 import yfinance as yf
 
+from lib.market_data import _YF_SESSION
 from lib.signals import bollinger_bands, ema, macd_series, rsi_series
 
 TRADING_DAYS_PER_YEAR = 252
@@ -42,7 +43,7 @@ DEFAULT_PARAMS = {
 def fetch_price_history(ticker: str, start: str, end: str) -> pd.DataFrame:
     """Daily OHLCV history for `ticker` between `start` and `end` (YYYY-MM-DD)."""
     try:
-        df = yf.Ticker(ticker).history(start=start, end=end, interval="1d")
+        df = yf.Ticker(ticker, session=_YF_SESSION).history(start=start, end=end, interval="1d")
     except Exception:
         df = pd.DataFrame()
     if df is None:
