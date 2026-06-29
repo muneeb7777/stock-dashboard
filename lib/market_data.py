@@ -11,18 +11,19 @@ import random
 import tempfile
 import time
 
+import requests
 import pandas as pd
 import streamlit as st
 import yfinance as yf
-from curl_cffi import requests as curl_requests
 
 # ---------------------------------------------------------------------------
 # Network helpers
 # ---------------------------------------------------------------------------
 
-# curl_cffi session impersonating Chrome 110 — bypasses Yahoo Finance TLS
-# fingerprinting that blocks plain requests/urllib on cloud IPs.
-_YF_SESSION = curl_requests.Session(impersonate="chrome110")
+_YF_SESSION = requests.Session()
+_YF_SESSION.headers["User-Agent"] = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+)
 
 # Cache timezone data in the system temp dir so it's always writable
 # (avoids permission errors on Streamlit Cloud / read-only filesystems).
