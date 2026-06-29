@@ -128,29 +128,17 @@ _STRUCTURAL_CSS = """
 
 
 def get_plotly_theme() -> dict:
-    """Return Plotly update_layout() kwargs matching the active UI theme.
-    Use for inline charts created directly in page files.
-    """
-    theme = st.query_params.get("theme", "Dark")
-    if theme == "Light":
-        return dict(
-            template="plotly_white",
-            paper_bgcolor="#ffffff",
-            plot_bgcolor="#f0f3fa",
-            font=dict(color="#131722"),
-        )
+    """Return Plotly update_layout() kwargs for the light theme."""
     return dict(
-        template="plotly_dark",
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#d1d4dc"),
+        template="plotly_white",
+        paper_bgcolor="#ffffff",
+        plot_bgcolor="#f0f3fa",
+        font=dict(color="#131722"),
     )
 
 
 def inject_base_style():
-    """Inject structural CSS and render the sidebar toggle. Theme color CSS is
-    injected separately by apply_theme() at the top of each page.
-    """
+    """Inject structural CSS and render the sidebar header."""
     with st.sidebar:
         st.markdown("### 📈 Market Analyst")
 

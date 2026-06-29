@@ -14,12 +14,9 @@ from lib.optimizer import (
     rebalance_suggestions,
 )
 from lib.portfolio import load_portfolio
-from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(page_title=f"Portfolio Optimizer - {APP_NAME}", page_icon="⚖️", layout="wide")
-apply_theme()
 inject_base_style()
-theme_sidebar()
 
 st.title("⚖️ Portfolio Optimizer")
 st.caption(
@@ -185,11 +182,10 @@ if cur_weights:
     ))
 
 fig.update_layout(
-    template="plotly_dark",
-    height=480,
-    margin=dict(l=10, r=10, t=30, b=10),
-    xaxis_title="Annual volatility (%)",
-    yaxis_title="Expected annual return (%)",
+    template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
+    height=480, margin=dict(l=10, r=10, t=30, b=10),
+    xaxis=dict(title="Annual volatility (%)", gridcolor="#e0e3eb"),
+    yaxis=dict(title="Expected annual return (%)", gridcolor="#e0e3eb"),
     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
 )
 st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
@@ -217,8 +213,10 @@ if target_port and cur_weights:
     fig2.add_trace(go.Bar(x=comp_df["Ticker"], y=comp_df["Current"], name="Current", marker_color="#f1c40f"))
     fig2.add_trace(go.Bar(x=comp_df["Ticker"], y=comp_df["Optimized"], name="Optimized", marker_color=marker_colors[target_key]))
     fig2.update_layout(
-        template="plotly_dark", height=380, barmode="group",
-        margin=dict(l=10, r=10, t=30, b=10), yaxis_title="Weight (%)",
+        template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
+        height=380, barmode="group", margin=dict(l=10, r=10, t=30, b=10),
+        xaxis=dict(gridcolor="#e0e3eb"),
+        yaxis=dict(title="Weight (%)", gridcolor="#e0e3eb"),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
     st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
@@ -247,7 +245,10 @@ fig3 = go.Figure(go.Heatmap(
     colorscale="RdBu", zmid=0, zmin=-1, zmax=1,
     text=corr.round(2).values, texttemplate="%{text}",
 ))
-fig3.update_layout(template="plotly_dark", height=420, margin=dict(l=10, r=10, t=30, b=10))
+fig3.update_layout(
+    template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
+    height=420, margin=dict(l=10, r=10, t=30, b=10),
+)
 st.plotly_chart(fig3, use_container_width=True, config={"displayModeBar": False})
 
 # ---------------------------------------------------------------------------
@@ -274,8 +275,10 @@ if cur_weights:
     fig4.add_trace(go.Scatter(y=p90, mode="lines", name="90th percentile", line=dict(color="#2ecc71", width=2, dash="dot")))
 
     fig4.update_layout(
-        template="plotly_dark", height=420, margin=dict(l=10, r=10, t=30, b=10),
-        xaxis_title="Trading days ahead", yaxis_title="Portfolio value ($)",
+        template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
+        height=420, margin=dict(l=10, r=10, t=30, b=10),
+        xaxis=dict(title="Trading days ahead", gridcolor="#e0e3eb"),
+        yaxis=dict(title="Portfolio value ($)", gridcolor="#e0e3eb"),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
     st.plotly_chart(fig4, use_container_width=True, config={"displayModeBar": False})

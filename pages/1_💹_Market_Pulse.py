@@ -15,12 +15,9 @@ from lib.market_data import (
     get_quotes_bulk,
 )
 from lib.news import headlines_last_24h, market_news, time_ago
-from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(page_title=f"Market Pulse - {APP_NAME}", page_icon="💹", layout="wide")
-apply_theme()
 inject_base_style()
-theme_sidebar()
 
 st.title("💹 Market Pulse")
 
@@ -108,8 +105,9 @@ if sector_rows:
     fig = go.Figure(go.Bar(x=pcts, y=names, orientation="h", marker_color=colors,
                             text=[f"{p:+.2f}%" for p in pcts], textposition="outside"))
     fig.update_layout(
-        template="plotly_dark", height=400, margin=dict(l=10, r=40, t=10, b=10),
-        xaxis_title="1-day change (%)",
+        template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
+        height=400, margin=dict(l=10, r=40, t=10, b=10),
+        xaxis=dict(title="1-day change (%)", gridcolor="#e0e3eb"), yaxis=dict(gridcolor="#e0e3eb"),
     )
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 else:

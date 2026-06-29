@@ -8,12 +8,9 @@ from lib.etf_peers import get_peers
 from lib.logos import get_logo_or_placeholder
 from lib.market_data import PERIOD_MAP, get_etf_details, get_history, get_prev_close
 from lib.risk import etf_risk_score, risk_label
-from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(page_title=f"ETF Analyzer - {APP_NAME}", page_icon="🧺", layout="wide")
-apply_theme()
 inject_base_style()
-theme_sidebar()
 
 st.title("🧺 ETF Analyzer")
 
@@ -111,7 +108,11 @@ if sector_weights:
         x=[r[1] for r in rows], y=[r[0] for r in rows], orientation="h",
         marker_color="#5dade2", text=[f"{r[1]:.1f}%" for r in rows], textposition="outside",
     ))
-    fig.update_layout(template="plotly_dark", height=max(300, 30 * len(rows)), margin=dict(l=10, r=40, t=10, b=10), xaxis_title="Weight (%)")
+    fig.update_layout(
+        template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
+        height=max(300, 30 * len(rows)), margin=dict(l=10, r=40, t=10, b=10),
+        xaxis=dict(title="Weight (%)", gridcolor="#e0e3eb"), yaxis=dict(gridcolor="#e0e3eb"),
+    )
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 else:
     st.info("Sector breakdown unavailable for this ETF.")

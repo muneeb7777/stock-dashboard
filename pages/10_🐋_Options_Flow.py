@@ -10,12 +10,9 @@ from lib.options_flow import (
     scan_market,
     unusual_activity,
 )
-from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(page_title=f"Options Flow - {APP_NAME}", page_icon="🐋", layout="wide")
-apply_theme()
 inject_base_style()
-theme_sidebar()
 
 st.title("🐋 Options Flow")
 st.caption(
@@ -91,11 +88,11 @@ with tab1:
                 )
             )
             fig.update_layout(
-                template="plotly_dark",
-                height=420,
-                barmode="group",
+                template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
+                height=420, barmode="group",
                 margin=dict(l=10, r=10, t=30, b=10),
-                yaxis=dict(title="Volume"),
+                xaxis=dict(gridcolor="#e0e3eb"),
+                yaxis=dict(title="Volume", gridcolor="#e0e3eb"),
                 yaxis2=dict(title="Put/Call ratio", overlaying="y", side="right", showgrid=False),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             )

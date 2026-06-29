@@ -4,7 +4,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 from lib.config import APP_NAME, inject_base_style
-from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(
     page_title=f"Live Chart - {APP_NAME}",
@@ -12,9 +11,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
-apply_theme()
 inject_base_style()
-theme_sidebar()
 
 st.markdown(
     """

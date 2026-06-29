@@ -22,12 +22,9 @@ from lib.market_data import (
 )
 from lib.news import ticker_news, time_ago
 from lib.signals import at_a_glance, bs_delta, fundamental_score, max_pain_strike, technical_score
-from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(page_title=f"Stock Analyzer - {APP_NAME}", page_icon="🔍", layout="wide")
-apply_theme()
 inject_base_style()
-theme_sidebar()
 
 st.title("🔍 Stock Analyzer")
 
@@ -571,12 +568,11 @@ with _chart_col:
                 annotation_position="bottom right",
                 annotation_font_color="#888",
             )
-        _bar_grid = "#e0e3eb" if st.query_params.get("theme") == "Light" else "#2a2a2a"
         _fig_bar.update_layout(
             height=max(180, 64 * len(_bar_labels) + 40),
             margin=dict(l=0, r=130, t=10, b=10),
-            xaxis=dict(title="Estimated Value ($)", range=[0, _xmax], gridcolor=_bar_grid),
-            yaxis=dict(gridcolor=_bar_grid),
+            xaxis=dict(title="Estimated Value ($)", range=[0, _xmax], gridcolor="#e0e3eb"),
+            yaxis=dict(gridcolor="#e0e3eb"),
             showlegend=False,
             **get_plotly_theme(),
         )

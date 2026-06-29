@@ -1,7 +1,7 @@
 """Shared plotly chart helpers.
 
 render_price_chart() supports four views (Performance, Price, Candlestick,
-Area), all rendered with the plotly_dark template. Performance and Area
+Area), all rendered with the light theme. Performance and Area
 views split their line/fill into green (above baseline) and red (below
 baseline) segments, interpolating the exact zero-crossing point so the color
 change lands precisely on the baseline.
@@ -51,34 +51,17 @@ LT_TEXT = "#131722"
 
 
 def _chart_theme() -> dict:
-    """Return chart color palette matching the active UI theme."""
-    try:
-        import streamlit as st
-        light = st.query_params.get("theme") == "Light"
-    except Exception:
-        light = False
-    if light:
-        return {
-            "template": "plotly_white",
-            "paper_bgcolor": LT_BG,
-            "plot_bgcolor": LT_PANEL,
-            "font_color": LT_TEXT,
-            "grid": LT_GRID,
-            "zeroline": LT_GRID,
-            "spike": LT_CROSSHAIR,
-            "axis_color": "#555f73",
-            "hline_color": "rgba(0,0,0,0.20)",
-        }
+    """Return chart color palette for the light theme."""
     return {
-        "template": "plotly_dark",
-        "paper_bgcolor": TV_BG,
-        "plot_bgcolor": TV_BG,
-        "font_color": "#d1d4dc",
-        "grid": TV_GRID,
-        "zeroline": TV_GRID,
-        "spike": TV_CROSSHAIR,
-        "axis_color": "#787b86",
-        "hline_color": "rgba(255,255,255,0.20)",
+        "template": "plotly_white",
+        "paper_bgcolor": LT_BG,
+        "plot_bgcolor": LT_PANEL,
+        "font_color": LT_TEXT,
+        "grid": LT_GRID,
+        "zeroline": LT_GRID,
+        "spike": LT_CROSSHAIR,
+        "axis_color": "#555f73",
+        "hline_color": "rgba(0,0,0,0.20)",
     }
 
 
