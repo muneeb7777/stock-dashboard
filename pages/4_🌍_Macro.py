@@ -5,11 +5,12 @@ from lib import claude_analyst
 from lib.config import APP_NAME, inject_base_style, render_footer
 from lib.macro import fred_available, get_macro_snapshot
 from lib.rates import get_yield_curve
-from utils.theme import apply_theme, render_theme_toggle
+from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(page_title=f"Macro - {APP_NAME}", page_icon="🌍", layout="wide")
 apply_theme()
 inject_base_style()
+theme_sidebar()
 
 st.title("🌍 Macro")
 

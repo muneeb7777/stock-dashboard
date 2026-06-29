@@ -2,11 +2,12 @@ import streamlit as st
 
 from lib.config import APP_NAME, inject_base_style, render_footer
 from lib.news import market_news, ticker_news, time_ago
-from utils.theme import apply_theme, render_theme_toggle
+from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(page_title=f"News - {APP_NAME}", page_icon="📰", layout="wide")
 apply_theme()
 inject_base_style()
+theme_sidebar()
 
 st.title("📰 News")
 

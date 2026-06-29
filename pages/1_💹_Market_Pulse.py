@@ -15,11 +15,12 @@ from lib.market_data import (
     get_quotes_bulk,
 )
 from lib.news import headlines_last_24h, market_news, time_ago
-from utils.theme import apply_theme, render_theme_toggle
+from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(page_title=f"Market Pulse - {APP_NAME}", page_icon="💹", layout="wide")
 apply_theme()
 inject_base_style()
+theme_sidebar()
 
 st.title("💹 Market Pulse")
 

@@ -5,8 +5,6 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 
-from utils.theme import render_theme_toggle
-
 load_dotenv()
 
 APP_NAME = "Stock Market Analyst"
@@ -155,6 +153,5 @@ def inject_base_style():
     """
     with st.sidebar:
         st.markdown("### 📈 Market Analyst")
-        render_theme_toggle()
 
     st.markdown(f"<style>{_STRUCTURAL_CSS}</style>", unsafe_allow_html=True)

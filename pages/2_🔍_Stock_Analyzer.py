@@ -22,11 +22,12 @@ from lib.market_data import (
 )
 from lib.news import ticker_news, time_ago
 from lib.signals import at_a_glance, bs_delta, fundamental_score, max_pain_strike, technical_score
-from utils.theme import apply_theme, render_theme_toggle
+from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(page_title=f"Stock Analyzer - {APP_NAME}", page_icon="🔍", layout="wide")
 apply_theme()
 inject_base_style()
+theme_sidebar()
 
 st.title("🔍 Stock Analyzer")
 

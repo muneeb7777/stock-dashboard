@@ -5,11 +5,12 @@ import streamlit as st
 
 from lib.backtester import DEFAULT_PARAMS, STRATEGIES, fetch_price_history, run_backtest
 from lib.config import APP_NAME, inject_base_style, render_footer
-from utils.theme import apply_theme, render_theme_toggle
+from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(page_title=f"Backtester - {APP_NAME}", page_icon="🔬", layout="wide")
 apply_theme()
 inject_base_style()
+theme_sidebar()
 
 st.title("🔬 Strategy Backtester")
 st.caption(

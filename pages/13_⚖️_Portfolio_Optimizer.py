@@ -14,11 +14,12 @@ from lib.optimizer import (
     rebalance_suggestions,
 )
 from lib.portfolio import load_portfolio
-from utils.theme import apply_theme, render_theme_toggle
+from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(page_title=f"Portfolio Optimizer - {APP_NAME}", page_icon="⚖️", layout="wide")
 apply_theme()
 inject_base_style()
+theme_sidebar()
 
 st.title("⚖️ Portfolio Optimizer")
 st.caption(

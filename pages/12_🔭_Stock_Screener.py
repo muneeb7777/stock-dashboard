@@ -3,11 +3,12 @@ import streamlit as st
 
 from lib.config import APP_NAME, fmt_large_number, inject_base_style, render_footer
 from lib.screener import PRESETS, SCREENER_UNIVERSE, apply_filters, scan_universe
-from utils.theme import apply_theme, render_theme_toggle
+from utils.theme import apply_theme, theme_sidebar
 
 st.set_page_config(page_title=f"Stock Screener - {APP_NAME}", page_icon="🔭", layout="wide")
 apply_theme()
 inject_base_style()
+theme_sidebar()
 
 st.title("🔭 Stock Screener")
 st.caption(
