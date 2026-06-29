@@ -36,19 +36,22 @@ except Exception:
 def _fetch_ticker(symbol: str, retries: int = 3) -> yf.Ticker | None:
     """Return a yf.Ticker whose .info has successfully loaded.
 
-    Uses exponential backoff between attempts. Returns None when all
-    retries are exhausted so callers can show a user-friendly error.
+    Uses exponential backoff between attempts. Re-raises the last exception
+    after all retries so callers can surface the real error to the user.
     """
+    last_exc: Exception | None = None
     for attempt in range(retries):
         try:
             tk = yf.Ticker(symbol, session=_YF_SESSION)
             info = tk.info
             if info and len(info) > 5:
                 return tk
-        except Exception:
-            pass
+        except Exception as exc:
+            last_exc = exc
         if attempt < retries - 1:
             time.sleep(2 ** attempt + random.uniform(0, 1))
+    if last_exc is not None:
+        raise last_exc
     return None
 
 

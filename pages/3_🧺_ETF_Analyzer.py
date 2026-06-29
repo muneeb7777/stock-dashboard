@@ -27,10 +27,15 @@ with col_period:
 if not ticker:
     st.stop()
 
-details = get_etf_details(ticker)
+try:
+    details = get_etf_details(ticker)
+except Exception as e:
+    st.error(f"Error loading {ticker}: {type(e).__name__}: {str(e)}")
+    render_footer()
+    st.stop()
 
 if not details.get("price"):
-    st.error(f"Couldn't load data for '{ticker}'. Check the ticker symbol and try again.")
+    st.error(f"Error loading {ticker}: no price data returned (ticker may be invalid or delisted)")
     render_footer()
     st.stop()
 

@@ -47,10 +47,15 @@ if not ticker:
 if is_etf(ticker):
     st.warning(f"{ticker} looks like an ETF. Try the ETF Analyzer page for fund-level data.")
 
-fund = get_stock_fundamentals(ticker)
+try:
+    fund = get_stock_fundamentals(ticker)
+except Exception as e:
+    st.error(f"Error loading {ticker}: {type(e).__name__}: {str(e)}")
+    render_footer()
+    st.stop()
 
 if not fund.get("price"):
-    st.error(f"Couldn't load data for '{ticker}'. Check the ticker symbol and try again.")
+    st.error(f"Error loading {ticker}: no price data returned (ticker may be invalid or delisted)")
     render_footer()
     st.stop()
 
