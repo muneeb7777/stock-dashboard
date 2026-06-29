@@ -54,7 +54,7 @@ def _chart_theme() -> dict:
     """Return chart color palette matching the active UI theme."""
     try:
         import streamlit as st
-        light = st.session_state.get("theme") == "Light"
+        light = st.query_params.get("theme") == "Light"
     except Exception:
         light = False
     if light:

@@ -3,8 +3,10 @@ import streamlit as st
 
 from lib.config import APP_NAME, inject_base_style, render_footer
 from lib.insider import MIN_SIZE_OPTIONS, detect_cluster_buying, fetch_insider_feed, hot_stocks, search_insider_transactions
+from utils.theme import apply_theme, render_theme_toggle
 
 st.set_page_config(page_title=f"Insider Flow - {APP_NAME}", page_icon="🕴️", layout="wide")
+apply_theme()
 inject_base_style()
 
 st.title("🕴️ Insider Flow")

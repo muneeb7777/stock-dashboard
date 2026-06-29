@@ -8,8 +8,10 @@ from lib.config import APP_NAME, fmt_large_number, inject_base_style, render_foo
 from lib.market_data import get_history, get_quotes_bulk, get_stock_fundamentals
 from lib.portfolio import load_portfolio, save_portfolio
 from lib.risk import etf_risk_score, portfolio_risk_score, risk_label
+from utils.theme import apply_theme, render_theme_toggle
 
 st.set_page_config(page_title=f"Portfolio - {APP_NAME}", page_icon="💼", layout="wide")
+apply_theme()
 inject_base_style()
 
 st.title("💼 Portfolio")

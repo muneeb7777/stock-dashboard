@@ -2,8 +2,10 @@ import streamlit as st
 
 from lib.config import APP_NAME, inject_base_style, render_footer
 from lib.market_data import INDEX_TICKERS, get_quotes_bulk
+from utils.theme import apply_theme, render_theme_toggle
 
 st.set_page_config(page_title=APP_NAME, page_icon="📈", layout="wide")
+apply_theme()
 inject_base_style()
 
 st.title("📈 Stock Market Analyst")

@@ -10,8 +10,10 @@ from lib.options_flow import (
     scan_market,
     unusual_activity,
 )
+from utils.theme import apply_theme, render_theme_toggle
 
 st.set_page_config(page_title=f"Options Flow - {APP_NAME}", page_icon="🐋", layout="wide")
+apply_theme()
 inject_base_style()
 
 st.title("🐋 Options Flow")
