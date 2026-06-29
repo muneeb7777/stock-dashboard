@@ -34,25 +34,26 @@ except Exception:
 
 
 def _fetch_ticker(symbol: str, retries: int = 3) -> yf.Ticker | None:
-    """Return a yf.Ticker whose .info has successfully loaded.
-
-    Uses exponential backoff between attempts. Re-raises the last exception
-    after all retries so callers can surface the real error to the user.
-    """
-    last_exc: Exception | None = None
     for attempt in range(retries):
         try:
-            tk = yf.Ticker(symbol, session=_YF_SESSION)
+            session = requests.Session()
+            session.headers.update({
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/120.0.0.0 Safari/537.36"
+                ),
+            })
+            tk = yf.Ticker(symbol, session=session)
             info = tk.info
             if info and len(info) > 5:
                 return tk
-        except Exception as exc:
-            last_exc = exc
-        if attempt < retries - 1:
-            time.sleep(2 ** attempt + random.uniform(0, 1))
-    if last_exc is not None:
-        raise last_exc
-    return None
+        except Exception as e:
+            if "RateLimit" in type(e).__name__ or "rate" in str(e).lower():
+                time.sleep(2 ** attempt + random.uniform(1, 3))
+                continue
+            raise e
+    raise Exception(f"Rate limited after {retries} attempts for {symbol}")
 
 
 def _fetch_history(tk: yf.Ticker, retries: int = 3, **kwargs) -> pd.DataFrame:
