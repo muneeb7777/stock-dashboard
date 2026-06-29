@@ -10,6 +10,7 @@ from lib.config import APP_NAME, fmt_large_number, fmt_num, fmt_pct, inject_base
 from lib.logos import get_logo_or_placeholder
 from lib.market_data import (
     TIMEFRAMES,
+    get_extended_hours_data,
     get_history,
     get_history_tf,
     get_option_chain,
@@ -71,6 +72,49 @@ with header_cols[4]:
 with header_cols[5]:
     beta = fund.get("beta")
     st.metric("Beta", f"{beta:.2f}" if beta is not None else "—")
+
+# ---------------------------------------------------------------------------
+# Extended hours banner (shown only outside regular market hours)
+# ---------------------------------------------------------------------------
+
+_ext = get_extended_hours_data(ticker)
+if _ext:
+    _session_label = "PRE-MARKET" if _ext["session"] == "pre" else "AFTER-HOURS"
+    _pct = _ext["pct_change"]
+    _chg = _ext["change"]
+    _color = "#2ecc71" if (_pct or 0) >= 0 else "#e74c3c"
+    _bg    = "#0d2b0d"  if (_pct or 0) >= 0 else "#2b0d0d"
+
+    _price_str = f"${_ext['price']:,.2f}"
+    _pct_str   = f"{_pct:+.2f}%" if _pct is not None else "—"
+    _chg_str   = f"${_chg:+.2f}" if _chg is not None else "—"
+    _vol_str   = f"{_ext['volume']:,.0f}" if _ext["volume"] else "—"
+
+    _time_str = "—"
+    if _ext["last_trade_time"]:
+        _t = _ext["last_trade_time"]
+        _h = _t.hour % 12 or 12
+        _time_str = f"{_h}:{_t.minute:02d} {'AM' if _t.hour < 12 else 'PM'} ET"
+
+    st.markdown(
+        f"<div style='background:{_bg};border:1px solid {_color};border-radius:10px;"
+        f"padding:12px 20px;margin:10px 0 4px;display:flex;align-items:center;gap:28px'>"
+        f"<div>"
+        f"  <div style='font-size:10px;color:{_color};font-weight:700;letter-spacing:1.5px;"
+        f"  text-transform:uppercase;margin-bottom:3px'>{_session_label}</div>"
+        f"  <div style='font-size:24px;font-weight:800;color:#fff;font-family:monospace'>{_price_str}</div>"
+        f"</div>"
+        f"<div>"
+        f"  <div style='font-size:18px;font-weight:700;color:{_color}'>{_pct_str}</div>"
+        f"  <div style='font-size:13px;color:{_color};opacity:.85'>{_chg_str}</div>"
+        f"</div>"
+        f"<div style='margin-left:auto;text-align:right;font-size:12px;line-height:1.8'>"
+        f"  <span style='color:#666'>Volume</span> <span style='color:#aaa'>{_vol_str}</span><br>"
+        f"  <span style='color:#666'>Last trade</span> <span style='color:#aaa'>{_time_str}</span>"
+        f"</div>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
 
 # ---------------------------------------------------------------------------
 # Big chart

@@ -292,6 +292,111 @@ def get_prev_close(ticker: str) -> float | None:
     return None
 
 
+@st.cache_data(ttl=60, show_spinner=False)
+def get_extended_hours_data(ticker: str) -> dict | None:
+    """Return extended-hours snapshot when outside regular market hours.
+
+    Returns None during regular trading hours (9:30 AM–4:00 PM ET, weekdays)
+    or when no extended-hours price is available.
+
+    Returned dict keys:
+        session        – "pre" or "post"
+        price          – last extended-hours price
+        change         – change from previous regular close
+        pct_change     – % change (e.g. -1.23 means −1.23 %)
+        volume         – cumulative extended-hours volume (may be None)
+        last_trade_time – tz-aware datetime of last extended trade (may be None)
+        prev_close     – previous regular-session close
+    """
+    from zoneinfo import ZoneInfo
+
+    et = ZoneInfo("America/New_York")
+    now = dt.datetime.now(et)
+
+    if now.weekday() >= 5:
+        return None
+
+    market_open  = now.replace(hour=9,  minute=30, second=0, microsecond=0)
+    market_close = now.replace(hour=16, minute=0,  second=0, microsecond=0)
+    pre_start    = now.replace(hour=4,  minute=0,  second=0, microsecond=0)
+    post_end     = now.replace(hour=20, minute=0,  second=0, microsecond=0)
+
+    if market_open <= now <= market_close:
+        return None
+
+    if pre_start <= now < market_open:
+        session = "pre"
+    elif market_close < now <= post_end:
+        session = "post"
+    else:
+        return None
+
+    try:
+        tk = yf.Ticker(ticker)
+        full_info = tk.info
+    except Exception:
+        return None
+
+    prev_close = (
+        full_info.get("regularMarketPreviousClose")
+        or full_info.get("previousClose")
+    )
+
+    price = None
+    pct_change = None
+    volume = None
+    last_trade_time = None
+
+    # Primary: 1-minute bars with prepost=True for price + volume + timestamp
+    try:
+        bars = tk.history(period="1d", interval="1m", prepost=True)
+        if bars is not None and not bars.empty:
+            if bars.index.tz is None:
+                bars.index = bars.index.tz_localize("UTC").tz_convert(et)
+            else:
+                bars.index = bars.index.tz_convert(et)
+
+            session_bars = (
+                bars[bars.index < market_open]
+                if session == "pre"
+                else bars[bars.index > market_close]
+            )
+            if not session_bars.empty:
+                price = float(session_bars["Close"].iloc[-1])
+                volume = float(session_bars["Volume"].sum())
+                last_trade_time = session_bars.index[-1].to_pydatetime()
+    except Exception:
+        pass
+
+    # Fallback: .info fields
+    if price is None:
+        if session == "pre":
+            price = full_info.get("preMarketPrice")
+            raw_pct = full_info.get("preMarketChangePercent")
+        else:
+            price = full_info.get("postMarketPrice")
+            raw_pct = full_info.get("postMarketChangePercent")
+        if raw_pct is not None:
+            pct_change = raw_pct * 100
+
+    if price is None:
+        return None
+
+    change = (price - prev_close) if prev_close else None
+    if pct_change is None and prev_close and change is not None:
+        pct_change = change / prev_close * 100
+
+    return {
+        "session": session,
+        "price": price,
+        "change": change,
+        "pct_change": pct_change,
+        "volume": volume,
+        "last_trade_time": last_trade_time,
+        "prev_close": prev_close,
+    }
+
+
 @st.cache_data(ttl=300, show_spinner=False)
 def get_history_bulk(tickers: tuple, period_label: str) -> dict:
     """Return {ticker: DataFrame} of history for many tickers."""
