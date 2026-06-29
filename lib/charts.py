@@ -51,17 +51,17 @@ LT_TEXT = "#131722"
 
 
 def _chart_theme() -> dict:
-    """Return chart color palette for the light theme."""
+    """Return the TradingView dark chart palette."""
     return {
-        "template": "plotly_white",
-        "paper_bgcolor": LT_BG,
-        "plot_bgcolor": LT_PANEL,
-        "font_color": LT_TEXT,
-        "grid": LT_GRID,
-        "zeroline": LT_GRID,
-        "spike": LT_CROSSHAIR,
-        "axis_color": "#555f73",
-        "hline_color": "rgba(0,0,0,0.20)",
+        "template": "plotly_dark",
+        "paper_bgcolor": TV_BG,
+        "plot_bgcolor": TV_BG,
+        "font_color": "#d1d4dc",
+        "grid": TV_GRID,
+        "zeroline": TV_GRID,
+        "spike": TV_CROSSHAIR,
+        "axis_color": "#787b86",
+        "hline_color": "rgba(255,255,255,0.20)",
     }
 
 

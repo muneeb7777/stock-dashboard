@@ -128,12 +128,12 @@ _STRUCTURAL_CSS = """
 
 
 def get_plotly_theme() -> dict:
-    """Return Plotly update_layout() kwargs for the light theme."""
+    """Return Plotly update_layout() kwargs for the TradingView dark theme."""
     return dict(
-        template="plotly_white",
-        paper_bgcolor="#ffffff",
-        plot_bgcolor="#f0f3fa",
-        font=dict(color="#131722"),
+        template="plotly_dark",
+        paper_bgcolor="#131722",
+        plot_bgcolor="#131722",
+        font=dict(color="#d1d4dc"),
     )
 
 

@@ -22,6 +22,7 @@ from lib.market_data import (
 )
 from lib.news import ticker_news, time_ago
 from lib.signals import at_a_glance, bs_delta, fundamental_score, max_pain_strike, technical_score
+from utils.theme import apply_dark_plotly
 
 st.set_page_config(page_title=f"Stock Analyzer - {APP_NAME}", page_icon="🔍", layout="wide")
 inject_base_style()
@@ -571,11 +572,10 @@ with _chart_col:
         _fig_bar.update_layout(
             height=max(180, 64 * len(_bar_labels) + 40),
             margin=dict(l=0, r=130, t=10, b=10),
-            xaxis=dict(title="Estimated Value ($)", range=[0, _xmax], gridcolor="#e0e3eb"),
-            yaxis=dict(gridcolor="#e0e3eb"),
+            xaxis=dict(title="Estimated Value ($)", range=[0, _xmax]),
             showlegend=False,
-            **get_plotly_theme(),
         )
+        apply_dark_plotly(_fig_bar)
         st.plotly_chart(_fig_bar, use_container_width=True, config={"displayModeBar": False})
         if _bar_notes_html:
             st.markdown(_bar_notes_html, unsafe_allow_html=True)
@@ -986,10 +986,8 @@ with st.expander("Show technical correlation matrix"):
             showscale=True,
             colorbar=dict(title="r"),
         ))
-        _fig_hm.update_layout(
-            height=380, margin=dict(l=10, r=10, t=10, b=10),
-            **get_plotly_theme(),
-        )
+        _fig_hm.update_layout(height=380, margin=dict(l=10, r=10, t=10, b=10))
+        apply_dark_plotly(_fig_hm)
         st.plotly_chart(_fig_hm, use_container_width=True, config={"displayModeBar": False})
     else:
         st.info("Need at least 3 quarters of data to build the correlation matrix.")

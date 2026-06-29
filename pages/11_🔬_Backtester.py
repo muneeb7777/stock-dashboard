@@ -5,6 +5,7 @@ import streamlit as st
 
 from lib.backtester import DEFAULT_PARAMS, STRATEGIES, fetch_price_history, run_backtest
 from lib.config import APP_NAME, inject_base_style, render_footer
+from utils.theme import apply_dark_plotly
 
 st.set_page_config(page_title=f"Backtester - {APP_NAME}", page_icon="🔬", layout="wide")
 inject_base_style()
@@ -152,12 +153,11 @@ if last:
     fig.add_trace(go.Scatter(x=curve.index, y=curve["Strategy"], name="Strategy", line=dict(color="#3498db", width=2)))
     fig.add_trace(go.Scatter(x=curve.index, y=curve["Buy & Hold"], name="Buy & Hold", line=dict(color="#7f8c8d", width=2, dash="dot")))
     fig.update_layout(
-        template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
         height=420, margin=dict(l=10, r=10, t=30, b=10),
-        xaxis=dict(gridcolor="#e0e3eb"),
-        yaxis=dict(title="Portfolio value ($)", gridcolor="#e0e3eb"),
+        yaxis_title="Portfolio value ($)",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
+    apply_dark_plotly(fig)
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     st.subheader("Trade log")
@@ -211,12 +211,11 @@ if last:
         for i, (name, series) in enumerate(compare_curves.items()):
             fig2.add_trace(go.Scatter(x=series.index, y=series, name=name, line=dict(color=palette[i % len(palette)], width=2)))
         fig2.update_layout(
-            template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
             height=420, margin=dict(l=10, r=10, t=30, b=10),
-            xaxis=dict(gridcolor="#e0e3eb"),
-            yaxis=dict(title="Portfolio value ($)", gridcolor="#e0e3eb"),
+            yaxis_title="Portfolio value ($)",
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         )
+        apply_dark_plotly(fig2)
         st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
 else:
     st.info("Configure a strategy and click **Run backtest** to see results.")

@@ -8,6 +8,7 @@ from lib.config import APP_NAME, fmt_large_number, inject_base_style, render_foo
 from lib.market_data import get_history, get_quotes_bulk, get_stock_fundamentals
 from lib.portfolio import load_portfolio, save_portfolio
 from lib.risk import etf_risk_score, portfolio_risk_score, risk_label
+from utils.theme import apply_dark_plotly
 
 st.set_page_config(page_title=f"Portfolio - {APP_NAME}", page_icon="💼", layout="wide")
 inject_base_style()
@@ -125,9 +126,8 @@ with cols[0]:
             labels=[r["ticker"] for r in valued], values=[r["value"] for r in valued],
             hole=0.4,
         ))
-        fig.update_layout(
-            template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
-            height=380, margin=dict(l=10, r=10, t=10, b=10))
+        fig.update_layout(height=380, margin=dict(l=10, r=10, t=10, b=10))
+        apply_dark_plotly(fig)
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
     else:
         st.info("No valued holdings to chart.")
@@ -146,9 +146,8 @@ with cols[1]:
         fig = go.Figure(go.Pie(
             labels=list(sector_values.keys()), values=list(sector_values.values()), hole=0.4,
         ))
-        fig.update_layout(
-            template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
-            height=380, margin=dict(l=10, r=10, t=10, b=10))
+        fig.update_layout(height=380, margin=dict(l=10, r=10, t=10, b=10))
+        apply_dark_plotly(fig)
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
     else:
         st.info("Sector data unavailable.")

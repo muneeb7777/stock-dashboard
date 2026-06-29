@@ -5,6 +5,7 @@ from lib import claude_analyst
 from lib.config import APP_NAME, inject_base_style, render_footer
 from lib.macro import fred_available, get_macro_snapshot
 from lib.rates import get_yield_curve
+from utils.theme import apply_dark_plotly
 
 st.set_page_config(page_title=f"Macro - {APP_NAME}", page_icon="🌍", layout="wide")
 inject_base_style()
@@ -60,11 +61,10 @@ if not curve.empty:
         line=dict(color="#5dade2", width=2), marker=dict(size=7),
     ))
     fig.update_layout(
-        template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
         height=400, margin=dict(l=10, r=10, t=10, b=10),
-        xaxis=dict(title="Maturity", gridcolor="#e0e3eb"),
-        yaxis=dict(title="Yield (%)", gridcolor="#e0e3eb"),
+        xaxis_title="Maturity", yaxis_title="Yield (%)",
     )
+    apply_dark_plotly(fig)
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
     yield_curve_summary = ", ".join(f"{m}: {y:.2f}%" for m, y in zip(curve["maturity"], curve["yield"]))
 else:

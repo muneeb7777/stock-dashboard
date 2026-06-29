@@ -10,6 +10,7 @@ from lib.options_flow import (
     scan_market,
     unusual_activity,
 )
+from utils.theme import apply_dark_plotly
 
 st.set_page_config(page_title=f"Options Flow - {APP_NAME}", page_icon="🐋", layout="wide")
 inject_base_style()
@@ -88,14 +89,12 @@ with tab1:
                 )
             )
             fig.update_layout(
-                template="plotly_white", paper_bgcolor="#ffffff", plot_bgcolor="#f0f3fa", font_color="#131722",
-                height=420, barmode="group",
-                margin=dict(l=10, r=10, t=30, b=10),
-                xaxis=dict(gridcolor="#e0e3eb"),
-                yaxis=dict(title="Volume", gridcolor="#e0e3eb"),
+                height=420, barmode="group", margin=dict(l=10, r=10, t=30, b=10),
+                yaxis=dict(title="Volume"),
                 yaxis2=dict(title="Put/Call ratio", overlaying="y", side="right", showgrid=False),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             )
+            apply_dark_plotly(fig)
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 # ---------------------------------------------------------------------------
