@@ -179,29 +179,46 @@ _DARK_CSS = """
     .stButton > button:hover { background-color: #1e53e5 !important; }
     /* ---- Alerts -------------------------------------------------------- */
     [data-testid="stAlert"] { border: 1px solid #2a2e39 !important; }
+    /* ---- Semantic card classes (dark) ---------------------------------- */
+    .tv-card-bull    { background-color: #0d2b0d; }
+    .tv-card-bear    { background-color: #2b0d0d; }
+    .tv-card-amber   { background-color: #2b2300; }
+    .tv-card-blue    { background-color: #0d1a2b; }
+    .tv-card-neutral { background-color: #1e1e1e; }
+    .tv-card-warm    { background-color: #1e1a0d; }
+    .tv-banner-bull  { background-color: #0d2b0d; }
+    .tv-banner-bear  { background-color: #2b0d0d; }
+    .tv-vcard-container { border: 1px solid #2d2d2d; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+    .tv-corr-track   { background-color: #2a2a2a; border-radius: 4px; height: 8px; }
 """
 
 _LIGHT_CSS = """
     /* ---- Backgrounds --------------------------------------------------- */
-    .stApp, .main { background-color: #ffffff !important; }
-    .block-container { background-color: #ffffff !important; }
+    .stApp, .main, .block-container { background-color: #ffffff !important; }
     section[data-testid="stSidebar"],
     [data-testid="stSidebar"] {
         background-color: #f8f9fa !important;
         border-right: 1px solid #e0e3eb !important;
     }
-    /* ---- Text — blanket override so no dark remnants show through ------- */
-    .stApp, .stApp p, .stApp span, .stApp div, .stApp label,
+    /* ---- Force text dark everywhere ------------------------------------ */
+    p, h1, h2, h3, h4, h5, h6, span, label, div {
+        color: #131722 !important;
+    }
+    .stApp, .stApp p, .stApp span, .stApp label,
     .stMarkdown, .stMarkdown p, .stMarkdown span,
     section[data-testid="stSidebar"], section[data-testid="stSidebar"] * {
         color: #131722 !important;
     }
-    h1, h2, h3, h4, h5, h6 { color: #131722 !important; }
     [data-testid="stCaptionContainer"] { color: #555f73 !important; }
     hr { border-color: #e0e3eb !important; }
-    /* ---- Metric tiles -------------------------------------------------- */
-    [data-testid="stMetric"] {
+    /* ---- Fix ALL stMetric / metric-container variants ------------------ */
+    div[data-testid="stMetric"],
+    div[data-testid="metric-container"],
+    div[class*="stMetric"] {
         background-color: #f0f3fa !important;
+        color: #131722 !important;
+    }
+    [data-testid="stMetric"] {
         border: 1px solid #e0e3eb !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
     }
@@ -232,6 +249,7 @@ _LIGHT_CSS = """
     [data-testid="stSegmentedControl"] { background-color: #f0f3fa !important; }
     [data-testid="stRadio"] label,
     [data-testid="stCheckbox"] label { color: #131722 !important; }
+    .stMultiSelect span, .stSelectbox * { color: #131722 !important; }
     /* ---- Charts -------------------------------------------------------- */
     [data-testid="stPlotlyChart"] {
         background-color: #ffffff !important;
@@ -247,10 +265,9 @@ _LIGHT_CSS = """
         border: none !important;
     }
     .stButton > button:hover { background-color: #1e53e5 !important; }
-    /* ---- Alerts -------------------------------------------------------- */
-    [data-testid="stAlert"] {
-        background-color: #f0f3fa !important;
-        border: 1px solid #e0e3eb !important;
+    /* ---- Alerts / info boxes ------------------------------------------- */
+    .stAlert, [data-baseweb="notification"] {
+        filter: brightness(3) saturate(0.3) !important;
     }
     [data-testid="stAlert"] * { color: #131722 !important; }
     /* ---- BasewUI dropdowns --------------------------------------------- */
@@ -261,7 +278,38 @@ _LIGHT_CSS = """
         color: #131722 !important;
     }
     [data-baseweb="option"]:hover { background-color: #f0f3fa !important; }
+    /* ---- Semantic card classes (light) --------------------------------- */
+    .tv-card-bull    { background-color: #e8f5e9 !important; }
+    .tv-card-bear    { background-color: #fdecea !important; }
+    .tv-card-amber   { background-color: #fff8e1 !important; }
+    .tv-card-blue    { background-color: #e3f0fd !important; }
+    .tv-card-neutral { background-color: #f5f6f8 !important; }
+    .tv-card-warm    { background-color: #fef3e2 !important; }
+    .tv-banner-bull  { background-color: #e8f5e9 !important; }
+    .tv-banner-bear  { background-color: #fdecea !important; }
+    .tv-vcard-container { background-color: #f5f6f8 !important; border-color: #dde1e7 !important; }
+    .tv-corr-track   { background-color: #e0e3eb !important; }
 """
+
+
+def get_plotly_theme() -> dict:
+    """Return Plotly update_layout() kwargs matching the active UI theme.
+    Use for inline charts created directly in page files.
+    """
+    theme = st.session_state.get("theme", "Dark")
+    if theme == "Light":
+        return dict(
+            template="plotly_white",
+            paper_bgcolor="#ffffff",
+            plot_bgcolor="#f0f3fa",
+            font=dict(color="#131722"),
+        )
+    return dict(
+        template="plotly_dark",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#d1d4dc"),
+    )
 
 
 def inject_base_style():

@@ -6,7 +6,7 @@ import streamlit as st
 
 from lib import claude_analyst
 from lib.charts import OVERLAY_OPTIONS, PANEL_OPTIONS, render_gauge, render_technical_chart
-from lib.config import APP_NAME, fmt_large_number, fmt_num, fmt_pct, inject_base_style, render_footer
+from lib.config import APP_NAME, fmt_large_number, fmt_num, fmt_pct, get_plotly_theme, inject_base_style, render_footer
 from lib.logos import get_logo_or_placeholder
 from lib.market_data import (
     TIMEFRAMES,
@@ -83,7 +83,7 @@ if _ext:
     _pct = _ext["pct_change"]
     _chg = _ext["change"]
     _color = "#2ecc71" if (_pct or 0) >= 0 else "#e74c3c"
-    _bg    = "#0d2b0d"  if (_pct or 0) >= 0 else "#2b0d0d"
+    _banner_cls = "tv-banner-bull" if (_pct or 0) >= 0 else "tv-banner-bear"
 
     _price_str = f"${_ext['price']:,.2f}"
     _pct_str   = f"{_pct:+.2f}%" if _pct is not None else "—"
@@ -97,7 +97,7 @@ if _ext:
         _time_str = f"{_h}:{_t.minute:02d} {'AM' if _t.hour < 12 else 'PM'} ET"
 
     st.markdown(
-        f"<div style='background:{_bg};border:1px solid {_color};border-radius:10px;"
+        f"<div class='{_banner_cls}' style='border:1px solid {_color};border-radius:10px;"
         f"padding:12px 20px;margin:10px 0 4px;display:flex;align-items:center;gap:28px'>"
         f"<div>"
         f"  <div style='font-size:10px;color:{_color};font-weight:700;letter-spacing:1.5px;"
@@ -489,17 +489,17 @@ _verdict_avg  = sum(_verdict_vals) / len(_verdict_vals) if _verdict_vals else No
 if _cp and _verdict_avg:
     _vdiff = (_cp - _verdict_avg) / _verdict_avg * 100
     if _vdiff < -20:
-        _vlabel, _vcolor, _vbg = "UNDERVALUED", "#2ecc71", "#0d2b0d"
+        _vlabel, _vcolor, _vcls = "UNDERVALUED", "#2ecc71", "tv-card-bull"
         _vsub = f"Trading {abs(_vdiff):.0f}% below the average of all valuation models"
     elif _vdiff > 20:
-        _vlabel, _vcolor, _vbg = "OVERVALUED", "#e74c3c", "#2b0d0d"
+        _vlabel, _vcolor, _vcls = "OVERVALUED", "#e74c3c", "tv-card-bear"
         _vsub = f"Trading {_vdiff:.0f}% above the average of all valuation models"
     else:
-        _vlabel, _vcolor, _vbg = "FAIRLY VALUED", "#f39c12", "#2b2300"
+        _vlabel, _vcolor, _vcls = "FAIRLY VALUED", "#f39c12", "tv-card-amber"
         _vsub = f"Within {abs(_vdiff):.0f}% of the average of all valuation models"
     _used_names = " · ".join(lbl for lbl, _, v, _ in _MODELS if v is not None and v > 0)
     st.markdown(
-        f"<div style='background:{_vbg};border:2px solid {_vcolor};border-radius:12px;"
+        f"<div class='{_vcls}' style='border:2px solid {_vcolor};border-radius:12px;"
         f"padding:16px 22px;margin-top:8px;margin-bottom:6px;"
         f"display:flex;align-items:center;justify-content:space-between'>"
         f"<div>"
@@ -559,14 +559,14 @@ with _chart_col:
                 annotation_position="bottom right",
                 annotation_font_color="#888",
             )
+        _bar_grid = "#e0e3eb" if st.session_state.get("theme") == "Light" else "#2a2a2a"
         _fig_bar.update_layout(
             height=max(180, 64 * len(_bar_labels) + 40),
             margin=dict(l=0, r=130, t=10, b=10),
-            xaxis=dict(title="Estimated Value ($)", range=[0, _xmax], gridcolor="#2a2a2a"),
-            yaxis=dict(gridcolor="#2a2a2a"),
+            xaxis=dict(title="Estimated Value ($)", range=[0, _xmax], gridcolor=_bar_grid),
+            yaxis=dict(gridcolor=_bar_grid),
             showlegend=False,
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#ccc"),
+            **get_plotly_theme(),
         )
         st.plotly_chart(_fig_bar, use_container_width=True, config={"displayModeBar": False})
         if _bar_notes_html:
@@ -595,23 +595,23 @@ with _range_col:
         st.markdown(f"""
 <div style="margin:8px 0 16px">
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px">
-    <div style="background:#2b0d0d;border:1px solid #e74c3c;border-radius:8px;padding:8px 6px;text-align:center">
+    <div class="tv-card-bear" style="border:1px solid #e74c3c;border-radius:8px;padding:8px 6px;text-align:center">
       <div style="font-size:9px;color:#e74c3c;font-weight:700;letter-spacing:1px">BEAR</div>
-      <div style="font-size:13px;font-weight:700;color:#fff;margin:2px 0">${_bear:,.2f}</div>
+      <div style="font-size:13px;font-weight:700;margin:2px 0">${_bear:,.2f}</div>
       <div style="font-size:11px;color:#e74c3c">{_bear_pct:+.1f}%</div>
-      <div style="font-size:9px;color:#555;margin-top:2px">52-wk low</div>
+      <div style="font-size:9px;margin-top:2px">52-wk low</div>
     </div>
-    <div style="background:#1e1e1e;border:1px solid #444;border-radius:8px;padding:8px 6px;text-align:center">
-      <div style="font-size:9px;color:#aaa;font-weight:700;letter-spacing:1px">BASE</div>
-      <div style="font-size:13px;font-weight:700;color:#fff;margin:2px 0">${_base:,.2f}</div>
+    <div class="tv-card-neutral" style="border:1px solid #444;border-radius:8px;padding:8px 6px;text-align:center">
+      <div style="font-size:9px;font-weight:700;letter-spacing:1px">BASE</div>
+      <div style="font-size:13px;font-weight:700;margin:2px 0">${_base:,.2f}</div>
       <div style="font-size:11px;color:#f39c12">{_base_pct:+.1f}%</div>
-      <div style="font-size:9px;color:#555;margin-top:2px">analyst target</div>
+      <div style="font-size:9px;margin-top:2px">analyst target</div>
     </div>
-    <div style="background:#0d2b0d;border:1px solid #2ecc71;border-radius:8px;padding:8px 6px;text-align:center">
+    <div class="tv-card-bull" style="border:1px solid #2ecc71;border-radius:8px;padding:8px 6px;text-align:center">
       <div style="font-size:9px;color:#2ecc71;font-weight:700;letter-spacing:1px">BULL</div>
-      <div style="font-size:13px;font-weight:700;color:#fff;margin:2px 0">${_bull:,.2f}</div>
+      <div style="font-size:13px;font-weight:700;margin:2px 0">${_bull:,.2f}</div>
       <div style="font-size:11px;color:#2ecc71">{_bull_pct:+.1f}%</div>
-      <div style="font-size:9px;color:#555;margin-top:2px">highest model</div>
+      <div style="font-size:9px;margin-top:2px">highest model</div>
     </div>
   </div>
   <div style="position:relative;height:18px;border-radius:9px;
@@ -640,44 +640,44 @@ for _col, (lbl, desc, val, note) in zip(_mc_cols, _MODELS):
     with _col:
         if val is not None and val > 0 and _cp:
             _mpct   = (val - _cp) / _cp * 100
-            _mbg    = "#0d2b0d" if _mpct >= 0 else "#2b0d0d"
+            _mcls   = "tv-card-bull" if _mpct >= 0 else "tv-card-bear"
             _mbdr   = "#2ecc71" if _mpct >= 0 else "#e74c3c"
             _marrow = "▲" if _mpct >= 0 else "▼"
             _mtag   = "upside" if _mpct >= 0 else "downside"
             st.markdown(
-                f"<div style='background:{_mbg};border:1px solid {_mbdr};"
+                f"<div class='{_mcls}' style='border:1px solid {_mbdr};"
                 f"border-radius:10px;padding:14px;height:100%'>"
                 f"<div style='font-size:10px;color:{_mbdr};font-weight:700;"
                 f"letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px'>{lbl}</div>"
-                f"<div style='font-size:22px;font-weight:800;color:#fff;margin-bottom:2px'>"
+                f"<div style='font-size:22px;font-weight:800;margin-bottom:2px'>"
                 f"${val:,.2f}</div>"
                 f"<div style='font-size:14px;font-weight:600;color:{_mbdr};margin-bottom:10px'>"
                 f"{_marrow} {abs(_mpct):.1f}% {_mtag}</div>"
-                f"<div style='font-size:10px;color:#666;line-height:1.5'>{desc}</div>"
+                f"<div style='font-size:10px;line-height:1.5'>{desc}</div>"
                 f"</div>",
                 unsafe_allow_html=True,
             )
         elif val is not None and val <= 0 and _cp:
             st.markdown(
-                f"<div style='background:#1e1a0d;border:1px solid #b7791f;"
+                f"<div class='tv-card-warm' style='border:1px solid #b7791f;"
                 f"border-radius:10px;padding:14px;height:100%'>"
                 f"<div style='font-size:10px;color:#b7791f;font-weight:700;"
                 f"letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px'>{lbl}</div>"
                 f"<div style='font-size:22px;font-weight:800;color:#b7791f;margin-bottom:2px'>"
                 f"${val:,.2f}</div>"
                 f"<div style='font-size:12px;color:#b7791f;margin-bottom:10px'>⚠ Negative value</div>"
-                f"<div style='font-size:10px;color:#666;line-height:1.5'>{note or desc}</div>"
+                f"<div style='font-size:10px;line-height:1.5'>{note or desc}</div>"
                 f"</div>",
                 unsafe_allow_html=True,
             )
         else:
             st.markdown(
-                f"<div style='background:#1a1a1a;border:1px solid #2a2a2a;"
+                f"<div class='tv-card-neutral' style='border:1px solid #2a2a2a;"
                 f"border-radius:10px;padding:14px;height:100%'>"
-                f"<div style='font-size:10px;color:#555;font-weight:700;"
+                f"<div style='font-size:10px;font-weight:700;"
                 f"letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px'>{lbl}</div>"
-                f"<div style='font-size:20px;font-weight:700;color:#444;margin-bottom:8px'>N/A</div>"
-                f"<div style='font-size:10px;color:#555;line-height:1.5'>"
+                f"<div style='font-size:20px;font-weight:700;margin-bottom:8px'>N/A</div>"
+                f"<div style='font-size:10px;line-height:1.5'>"
                 f"{note or 'Not available'}</div>"
                 f"</div>",
                 unsafe_allow_html=True,
@@ -694,8 +694,8 @@ _gross_p = _vi.get("grossProfits")
 
 def _vcard(label: str, value: str) -> None:
     st.markdown(
-        f'<div style="border:1px solid #2d2d2d;border-radius:8px;padding:10px 12px;margin-bottom:8px">'
-        f'<div style="font-size:11px;color:#777;margin-bottom:2px">{label}</div>'
+        f'<div class="tv-vcard-container">'
+        f'<div style="font-size:11px;margin-bottom:2px">{label}</div>'
         f'<div style="font-size:15px;font-weight:600">{value}</div>'
         f'</div>',
         unsafe_allow_html=True,
@@ -801,9 +801,9 @@ def _corr_bar(r: float | None) -> str:
     direction = "positive" if r >= 0 else "negative"
     return (
         f"<div style='margin:6px 0'>"
-        f"<div style='display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:3px'>"
+        f"<div style='display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px'>"
         f"<span>{direction}</span><span><b>{r:+.2f}</b></span></div>"
-        f"<div style='background:#2a2a2a;border-radius:4px;height:8px'>"
+        f"<div class='tv-corr-track'>"
         f"<div style='width:{pct}%;background:{color};border-radius:4px;height:100%'></div>"
         f"</div></div>"
     )
@@ -822,31 +822,28 @@ with _dc1:
         if _r_mc >= 0.7:
             _d1_title = "Revenue is the #1 Driver"
             _d1_body  = "When revenue grows, the stock price tends to follow strongly. Watch quarterly revenue beats and misses closely."
-            _d1_color = "#1a3a1a"
-            _d1_border = "#2ecc71"
+            _d1_cls, _d1_border = "tv-card-bull", "#2ecc71"
         elif _r_mc >= 0.4:
             _d1_title = "Revenue Matters, But Isn't Everything"
             _d1_body  = "Revenue growth influences the stock, but other factors (margins, macro) also move the price meaningfully."
-            _d1_color = "#2a2a14"
-            _d1_border = "#f39c12"
+            _d1_cls, _d1_border = "tv-card-amber", "#f39c12"
         else:
             _d1_title = "Stock Decoupled from Revenue"
             _d1_body  = "Price hasn't closely tracked revenue over the past 2 years. Sentiment, buybacks, or macro may be bigger drivers."
-            _d1_color = "#2a1a1a"
-            _d1_border = "#e74c3c"
+            _d1_cls, _d1_border = "tv-card-bear", "#e74c3c"
         st.markdown(
-            f"<div style='background:{_d1_color};border:1px solid {_d1_border};border-radius:10px;padding:14px'>"
+            f"<div class='{_d1_cls}' style='border:1px solid {_d1_border};border-radius:10px;padding:14px'>"
             f"<div style='font-size:13px;font-weight:700;margin-bottom:6px'>{_d1_title}</div>"
-            f"<div style='font-size:12px;color:#bbb;margin-bottom:8px'>{_d1_body}</div>"
+            f"<div style='font-size:12px;margin-bottom:8px'>{_d1_body}</div>"
             + _corr_bar(_r_mc) +
             "</div>",
             unsafe_allow_html=True,
         )
     else:
         st.markdown(
-            "<div style='background:#1e1e1e;border:1px solid #333;border-radius:10px;padding:14px'>"
+            "<div class='tv-card-neutral' style='border:1px solid #333;border-radius:10px;padding:14px'>"
             "<div style='font-size:13px;font-weight:700;margin-bottom:6px'>Revenue Driver</div>"
-            "<div style='font-size:12px;color:#666'>Not enough quarterly data to assess.</div>"
+            "<div style='font-size:12px'>Not enough quarterly data to assess.</div>"
             "</div>",
             unsafe_allow_html=True,
         )
@@ -857,31 +854,28 @@ with _dc2:
         if _r_fcf_ni >= 0.7:
             _d2_title = "Earnings Quality: Strong"
             _d2_body  = "Cash flow and reported profits move together — earnings are backed by real cash. Lower risk of accounting surprises."
-            _d2_color = "#1a3a1a"
-            _d2_border = "#2ecc71"
+            _d2_cls, _d2_border = "tv-card-bull", "#2ecc71"
         elif _r_fcf_ni >= 0.3:
             _d2_title = "Earnings Quality: Mixed"
             _d2_body  = "Cash flow and profits are somewhat in sync, but diverge at times. Keep an eye on the cash flow statement."
-            _d2_color = "#2a2a14"
-            _d2_border = "#f39c12"
+            _d2_cls, _d2_border = "tv-card-amber", "#f39c12"
         else:
             _d2_title = "Earnings Quality: Watch Out"
             _d2_body  = "Profits and cash flow are not moving together. Reported earnings may not be fully converting to cash — dig deeper before investing."
-            _d2_color = "#2a1a1a"
-            _d2_border = "#e74c3c"
+            _d2_cls, _d2_border = "tv-card-bear", "#e74c3c"
         st.markdown(
-            f"<div style='background:{_d2_color};border:1px solid {_d2_border};border-radius:10px;padding:14px'>"
+            f"<div class='{_d2_cls}' style='border:1px solid {_d2_border};border-radius:10px;padding:14px'>"
             f"<div style='font-size:13px;font-weight:700;margin-bottom:6px'>{_d2_title}</div>"
-            f"<div style='font-size:12px;color:#bbb;margin-bottom:8px'>{_d2_body}</div>"
+            f"<div style='font-size:12px;margin-bottom:8px'>{_d2_body}</div>"
             + _corr_bar(_r_fcf_ni) +
             "</div>",
             unsafe_allow_html=True,
         )
     else:
         st.markdown(
-            "<div style='background:#1e1e1e;border:1px solid #333;border-radius:10px;padding:14px'>"
+            "<div class='tv-card-neutral' style='border:1px solid #333;border-radius:10px;padding:14px'>"
             "<div style='font-size:13px;font-weight:700;margin-bottom:6px'>Earnings Quality</div>"
-            "<div style='font-size:12px;color:#666'>Not enough cash flow data to assess.</div>"
+            "<div style='font-size:12px'>Not enough cash flow data to assess.</div>"
             "</div>",
             unsafe_allow_html=True,
         )
@@ -892,40 +886,36 @@ with _dc3:
         if _peg < 0:
             _d3_title = "Negative PEG — Interpret Carefully"
             _d3_body  = "A negative PEG usually means negative earnings or negative growth expectations. Focus on the path to profitability."
-            _d3_color = "#2a1a1a"
-            _d3_border = "#e74c3c"
+            _d3_cls, _d3_border = "tv-card-bear", "#e74c3c"
             _d3_badge = "⚠️ Unprofitable / Shrinking"
         elif _peg < 1.0:
             _d3_title = "Value Territory"
             _d3_body  = "PEG below 1 suggests the stock may be undervalued relative to its growth rate — a classic value signal."
-            _d3_color = "#1a3a1a"
-            _d3_border = "#2ecc71"
+            _d3_cls, _d3_border = "tv-card-bull", "#2ecc71"
             _d3_badge = f"PEG {_peg:.2f} — Undervalued vs Growth"
         elif _peg < 2.0:
             _d3_title = "Fairly Valued"
             _d3_body  = "PEG near 1–2 suggests the market is pricing growth reasonably. Not cheap, but not obviously expensive."
-            _d3_color = "#2a2a14"
-            _d3_border = "#f39c12"
+            _d3_cls, _d3_border = "tv-card-amber", "#f39c12"
             _d3_badge = f"PEG {_peg:.2f} — Fair Value"
         else:
             _d3_title = "Priced for Growth"
             _d3_body  = "High PEG means investors are paying a premium for expected growth. The stock needs to keep delivering — misses get punished hard."
-            _d3_color = "#1a2a3a"
-            _d3_border = "#3498db"
+            _d3_cls, _d3_border = "tv-card-blue", "#3498db"
             _d3_badge = f"PEG {_peg:.2f} — Growth Premium"
         st.markdown(
-            f"<div style='background:{_d3_color};border:1px solid {_d3_border};border-radius:10px;padding:14px'>"
+            f"<div class='{_d3_cls}' style='border:1px solid {_d3_border};border-radius:10px;padding:14px'>"
             f"<div style='font-size:13px;font-weight:700;margin-bottom:6px'>{_d3_title}</div>"
-            f"<div style='font-size:12px;color:#bbb;margin-bottom:8px'>{_d3_body}</div>"
+            f"<div style='font-size:12px;margin-bottom:8px'>{_d3_body}</div>"
             f"<div style='font-size:11px;color:{_d3_border};font-weight:600;margin-top:4px'>{_d3_badge}</div>"
             "</div>",
             unsafe_allow_html=True,
         )
     else:
         st.markdown(
-            "<div style='background:#1e1e1e;border:1px solid #333;border-radius:10px;padding:14px'>"
+            "<div class='tv-card-neutral' style='border:1px solid #333;border-radius:10px;padding:14px'>"
             "<div style='font-size:13px;font-weight:700;margin-bottom:6px'>Growth vs Value</div>"
-            "<div style='font-size:12px;color:#666'>PEG ratio not available for this ticker.</div>"
+            "<div style='font-size:12px'>PEG ratio not available for this ticker.</div>"
             "</div>",
             unsafe_allow_html=True,
         )
@@ -958,16 +948,16 @@ if _r_bv_mc is not None and _r_bv_mc >= 0.7:
     _insights.append(("yellow", "Book value moves with market cap — this stock behaves more like a value/asset-heavy name. Price-to-book is a relevant valuation yardstick."))
 
 _BOX = {
-    "green":  ("border:1px solid #2ecc71;background:#1a3a1a", "#2ecc71"),
-    "yellow": ("border:1px solid #f39c12;background:#2a2a14", "#f39c12"),
-    "red":    ("border:1px solid #e74c3c;background:#2a1a1a", "#e74c3c"),
+    "green":  ("tv-card-bull",  "border:1px solid #2ecc71"),
+    "yellow": ("tv-card-amber", "border:1px solid #f39c12"),
+    "red":    ("tv-card-bear",  "border:1px solid #e74c3c"),
 }
 
 for _tone, _text in _insights:
-    _style, _tc = _BOX[_tone]
+    _cls, _style = _BOX[_tone]
     st.markdown(
-        f"<div style='{_style};border-radius:8px;padding:10px 14px;margin-bottom:8px;"
-        f"font-size:13px;color:#ddd;line-height:1.5'>{_text}</div>",
+        f"<div class='{_cls}' style='{_style};border-radius:8px;padding:10px 14px;margin-bottom:8px;"
+        f"font-size:13px;line-height:1.5'>{_text}</div>",
         unsafe_allow_html=True,
     )
 
@@ -986,12 +976,11 @@ with st.expander("Show technical correlation matrix"):
             text=[[f"{v:.2f}" for v in row] for row in _corr.values],
             texttemplate="%{text}",
             showscale=True,
-            colorbar=dict(title="r", tickfont=dict(color="#ccc"), titlefont=dict(color="#ccc")),
+            colorbar=dict(title="r"),
         ))
         _fig_hm.update_layout(
             height=380, margin=dict(l=10, r=10, t=10, b=10),
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="#ccc"),
+            **get_plotly_theme(),
         )
         st.plotly_chart(_fig_hm, use_container_width=True, config={"displayModeBar": False})
     else:
