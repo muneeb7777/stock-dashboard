@@ -36,10 +36,50 @@ GRAY = "#8b949e"
 
 # TradingView dark theme palette
 TV_BG = "#131722"
-TV_GRID = "#1e222d"
+TV_PANEL = "#1e222d"
+TV_GRID = "#2a2e39"
 TV_CROSSHAIR = "#758696"
 TV_GREEN = "#26a69a"
 TV_RED = "#ef5350"
+
+# TradingView light theme palette
+LT_BG = "#ffffff"
+LT_PANEL = "#f0f3fa"
+LT_GRID = "#e0e3eb"
+LT_CROSSHAIR = "#9598a1"
+LT_TEXT = "#131722"
+
+
+def _chart_theme() -> dict:
+    """Return chart color palette matching the active UI theme."""
+    try:
+        import streamlit as st
+        light = st.session_state.get("theme") == "Light"
+    except Exception:
+        light = False
+    if light:
+        return {
+            "template": "plotly_white",
+            "paper_bgcolor": LT_BG,
+            "plot_bgcolor": LT_PANEL,
+            "font_color": LT_TEXT,
+            "grid": LT_GRID,
+            "zeroline": LT_GRID,
+            "spike": LT_CROSSHAIR,
+            "axis_color": "#555f73",
+            "hline_color": "rgba(0,0,0,0.20)",
+        }
+    return {
+        "template": "plotly_dark",
+        "paper_bgcolor": TV_BG,
+        "plot_bgcolor": TV_BG,
+        "font_color": "#d1d4dc",
+        "grid": TV_GRID,
+        "zeroline": TV_GRID,
+        "spike": TV_CROSSHAIR,
+        "axis_color": "#787b86",
+        "hline_color": "rgba(255,255,255,0.20)",
+    }
 
 
 def split_traces(x, y, baseline):
@@ -122,12 +162,17 @@ def render_price_chart(
         from that level.
     show_volume : add a volume subplot beneath the price panel.
     """
+    ct = _chart_theme()
+
     if df is None or df.empty:
         fig = go.Figure()
         fig.update_layout(
-            template="plotly_dark",
+            template=ct["template"],
             height=height,
             title=title,
+            paper_bgcolor=ct["paper_bgcolor"],
+            plot_bgcolor=ct["plot_bgcolor"],
+            font=dict(color=ct["font_color"]),
             annotations=[dict(text="No data available", showarrow=False, font=dict(size=16))],
         )
         return fig
@@ -135,7 +180,10 @@ def render_price_chart(
     df = df.dropna(subset=["Close"]).copy()
     if df.empty:
         fig = go.Figure()
-        fig.update_layout(template="plotly_dark", height=height, title=title)
+        fig.update_layout(
+            template=ct["template"], height=height, title=title,
+            paper_bgcolor=ct["paper_bgcolor"], plot_bgcolor=ct["plot_bgcolor"],
+        )
         return fig
 
     x = df.index
@@ -173,7 +221,7 @@ def render_price_chart(
                 ),
                 row=1, col=1,
             )
-        fig.add_hline(y=0, line=dict(color="rgba(255,255,255,0.25)", width=1, dash="dot"), row=1, col=1)
+        fig.add_hline(y=0, line=dict(color=ct["hline_color"], width=1, dash="dot"), row=1, col=1)
         end_return = pct[-1]
         fig.update_yaxes(title_text="Change (%)", row=1, col=1)
 
@@ -188,7 +236,7 @@ def render_price_chart(
                 ),
                 row=1, col=1,
             )
-        fig.add_hline(y=ref_price, line=dict(color="rgba(255,255,255,0.25)", width=1, dash="dot"), row=1, col=1)
+        fig.add_hline(y=ref_price, line=dict(color=ct["hline_color"], width=1, dash="dot"), row=1, col=1)
         fig.update_yaxes(range=[min(plot_close) * 0.98, max(plot_close) * 1.02], title_text="Price", row=1, col=1)
         end_return = ((plot_close[-1] / ref_price) - 1.0) * 100
 
@@ -242,14 +290,19 @@ def render_price_chart(
         )
 
     fig.update_layout(
-        template="plotly_dark",
+        template=ct["template"],
         height=height,
         title=title,
         margin=dict(l=10, r=60, t=40 if title else 20, b=10),
         hovermode="x unified",
         showlegend=False,
         xaxis_rangeslider_visible=False,
+        paper_bgcolor=ct["paper_bgcolor"],
+        plot_bgcolor=ct["plot_bgcolor"],
+        font=dict(color=ct["font_color"]),
     )
+    fig.update_xaxes(showgrid=True, gridcolor=ct["grid"], zerolinecolor=ct["zeroline"], color=ct["axis_color"])
+    fig.update_yaxes(showgrid=True, gridcolor=ct["grid"], zerolinecolor=ct["zeroline"], color=ct["axis_color"])
     return fig
 
 
@@ -265,6 +318,10 @@ def render_gauge(value: float | None, color_scale: str = "red_green", height: in
     if value is None:
         value = 0
 
+    ct = _chart_theme()
+    tick_color = ct["axis_color"]
+    needle_color = ct["font_color"]
+
     red_green = ["#e74c3c", "#e67e22", "#f1c40f", "#a3e635", "#2ecc71"]
     bands = red_green if color_scale == "red_green" else list(reversed(red_green))
 
@@ -278,15 +335,17 @@ def render_gauge(value: float | None, color_scale: str = "red_green", height: in
             mode="gauge",
             value=value,
             gauge={
-                "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": "rgba(255,255,255,0.4)"},
+                "axis": {"range": [0, 100], "tickwidth": 1, "tickcolor": tick_color},
                 "bar": {"color": "rgba(0,0,0,0)"},
                 "steps": steps,
-                "threshold": {"line": {"color": "white", "width": 4}, "thickness": 0.85, "value": value},
+                "threshold": {"line": {"color": needle_color, "width": 4}, "thickness": 0.85, "value": value},
             },
         )
     )
     fig.update_layout(
-        template="plotly_dark",
+        template=ct["template"],
+        paper_bgcolor=ct["paper_bgcolor"],
+        font=dict(color=ct["font_color"]),
         height=height,
         margin=dict(l=20, r=20, t=10, b=10),
     )
@@ -318,6 +377,7 @@ def render_technical_chart(
     rendered as stacked subplots beneath the price panel, sharing the
     x-axis (60% main / split evenly among the rest).
     """
+    ct = _chart_theme()
     title = title or ""
     overlays = overlays or []
     panels = [p for p in (panels or []) if p in PANEL_OPTIONS]
@@ -327,11 +387,12 @@ def render_technical_chart(
     if df is None or df.empty:
         fig = go.Figure()
         fig.update_layout(
-            template="plotly_dark",
+            template=ct["template"],
             height=height,
             title=title,
-            paper_bgcolor=TV_BG,
-            plot_bgcolor=TV_BG,
+            paper_bgcolor=ct["paper_bgcolor"],
+            plot_bgcolor=ct["plot_bgcolor"],
+            font=dict(color=ct["font_color"]),
             annotations=[dict(text="No data available", showarrow=False, font=dict(size=16))],
         )
         return fig
@@ -339,7 +400,10 @@ def render_technical_chart(
     df = df.dropna(subset=["Close"]).copy()
     if df.empty:
         fig = go.Figure()
-        fig.update_layout(template="plotly_dark", height=height, title=title, paper_bgcolor=TV_BG, plot_bgcolor=TV_BG)
+        fig.update_layout(
+            template=ct["template"], height=height, title=title,
+            paper_bgcolor=ct["paper_bgcolor"], plot_bgcolor=ct["plot_bgcolor"],
+        )
         return fig
 
     x = df.index
@@ -385,7 +449,7 @@ def render_technical_chart(
                 ),
                 row=1, col=1,
             )
-        fig.add_hline(y=0, line=dict(color="rgba(255,255,255,0.25)", width=1, dash="dot"), row=1, col=1)
+        fig.add_hline(y=0, line=dict(color=ct["hline_color"], width=1, dash="dot"), row=1, col=1)
         end_return = pct[-1]
         fig.update_yaxes(title_text="Change (%)", row=1, col=1)
 
@@ -400,7 +464,7 @@ def render_technical_chart(
                 ),
                 row=1, col=1,
             )
-        fig.add_hline(y=ref_price, line=dict(color="rgba(255,255,255,0.25)", width=1, dash="dot"), row=1, col=1)
+        fig.add_hline(y=ref_price, line=dict(color=ct["hline_color"], width=1, dash="dot"), row=1, col=1)
         fig.update_yaxes(range=[min(plot_close) * 0.98, max(plot_close) * 1.02], title_text="Price", row=1, col=1)
         end_return = ((plot_close[-1] / ref_price) - 1.0) * 100
 
@@ -588,7 +652,7 @@ def render_technical_chart(
     last_row = 1 + n_sub
 
     fig.update_layout(
-        template="plotly_dark",
+        template=ct["template"],
         height=height,
         title=dict(text=title, x=0, font=dict(size=14)),
         margin=dict(l=10, r=60, t=40 if title else 20, b=10),
@@ -596,20 +660,23 @@ def render_technical_chart(
         showlegend=bool(overlays),
         legend=dict(orientation="h", yanchor="bottom", y=1.01, xanchor="left", x=0, font=dict(size=11)),
         dragmode="pan",
-        paper_bgcolor=TV_BG,
-        plot_bgcolor=TV_BG,
+        paper_bgcolor=ct["paper_bgcolor"],
+        plot_bgcolor=ct["plot_bgcolor"],
+        font=dict(color=ct["font_color"]),
     )
 
     fig.update_xaxes(
-        showgrid=True, gridcolor=TV_GRID, zerolinecolor=TV_GRID,
+        showgrid=True, gridcolor=ct["grid"], zerolinecolor=ct["zeroline"],
+        color=ct["axis_color"],
         showspikes=True, spikemode="across", spikesnap="cursor",
-        spikecolor=TV_CROSSHAIR, spikethickness=1, spikedash="solid",
+        spikecolor=ct["spike"], spikethickness=1, spikedash="solid",
         rangeslider_visible=False,
     )
     fig.update_yaxes(
-        showgrid=True, gridcolor=TV_GRID, zerolinecolor=TV_GRID,
+        showgrid=True, gridcolor=ct["grid"], zerolinecolor=ct["zeroline"],
+        color=ct["axis_color"],
         showspikes=True, spikemode="across", spikesnap="cursor",
-        spikecolor=TV_CROSSHAIR, spikethickness=1, spikedash="solid",
+        spikecolor=ct["spike"], spikethickness=1, spikedash="solid",
     )
     fig.update_xaxes(rangeslider_visible=True, rangeslider_thickness=0.06, row=last_row, col=1)
     return fig
@@ -617,9 +684,16 @@ def render_technical_chart(
 
 def render_sparkline(df: pd.DataFrame, baseline_price: float | None = None, height: int = 60):
     """Tiny green/red split line chart with no axes - used in Market Pulse cards."""
+    ct = _chart_theme()
+
     if df is None or df.empty:
         fig = go.Figure()
-        fig.update_layout(height=height, margin=dict(l=0, r=0, t=0, b=0), template="plotly_dark")
+        fig.update_layout(
+            height=height, margin=dict(l=0, r=0, t=0, b=0),
+            template=ct["template"],
+            paper_bgcolor=ct["paper_bgcolor"],
+            plot_bgcolor=ct["plot_bgcolor"],
+        )
         return fig
 
     close = df["Close"].dropna()
@@ -637,7 +711,9 @@ def render_sparkline(df: pd.DataFrame, baseline_price: float | None = None, heig
         fig.add_trace(go.Scatter(x=seg_x, y=seg_y, mode="lines", line=dict(color=color, width=1.5), showlegend=False))
 
     fig.update_layout(
-        template="plotly_dark",
+        template=ct["template"],
+        paper_bgcolor=ct["paper_bgcolor"],
+        plot_bgcolor=ct["plot_bgcolor"],
         height=height,
         margin=dict(l=0, r=0, t=0, b=0),
         xaxis=dict(visible=False),

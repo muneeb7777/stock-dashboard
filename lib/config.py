@@ -126,60 +126,141 @@ _STRUCTURAL_CSS = """
 """
 
 _DARK_CSS = """
-    .stApp { background-color: #0a0e14; }
-    [data-testid="stSidebar"] { background-color: #0d1117; border-right: 1px solid #21262d; }
-    [data-testid="stCaptionContainer"] { color: #8b949e; }
-    hr { border-color: #21262d; }
+    /* ---- Backgrounds --------------------------------------------------- */
+    .stApp, .main { background-color: #131722 !important; }
+    .block-container { background-color: #131722 !important; }
+    section[data-testid="stSidebar"],
+    [data-testid="stSidebar"] {
+        background-color: #1e222d !important;
+        border-right: 1px solid #2a2e39 !important;
+    }
+    /* ---- Text ---------------------------------------------------------- */
+    [data-testid="stCaptionContainer"] { color: #787b86 !important; }
+    hr { border-color: #2a2e39 !important; }
+    /* ---- Metric tiles -------------------------------------------------- */
     [data-testid="stMetric"] {
-        background: linear-gradient(180deg, #161b22 0%, #11151c 100%);
-        border: 1px solid #262c36;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.45);
+        background-color: #1e222d !important;
+        border: 1px solid #2a2e39 !important;
+        box-shadow: none !important;
     }
-    [data-testid="stMetricLabel"] { color: #8b949e !important; }
+    [data-testid="stMetricLabel"] { color: #787b86 !important; }
+    [data-testid="stMetricValue"] { color: #d1d4dc !important; }
+    /* ---- Cards / bordered containers ----------------------------------- */
     div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: linear-gradient(180deg, #12161d 0%, #0e1218 100%);
-        border: 1px solid #21262d !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+        background-color: #1e222d !important;
+        border: 1px solid #2a2e39 !important;
+        box-shadow: none !important;
     }
-    [data-testid="stTabs"] [data-baseweb="tab-list"] { border-bottom: 1px solid #21262d; }
+    /* ---- Tabs ---------------------------------------------------------- */
+    [data-testid="stTabs"] [data-baseweb="tab-list"] { border-bottom: 1px solid #2a2e39; }
+    [data-testid="stTabs"] [data-baseweb="tab"] { color: #787b86 !important; }
+    [data-testid="stTabs"] [aria-selected="true"] { color: #2962ff !important; }
+    /* ---- Inputs -------------------------------------------------------- */
     [data-testid="stTextInput"] input,
-    [data-baseweb="select"] > div { background-color: #161b22 !important; border-color: #30363d !important; }
-    [data-testid="stSegmentedControl"] { background-color: #11151c; }
-    [data-testid="stPlotlyChart"] { background-color: #0e1218; border: 1px solid #1c2128; }
-    [data-testid="stDataFrame"] { border: 1px solid #21262d; }
-    .stButton > button { border: 1px solid #30363d; }
-    [data-testid="stAlert"] { border: 1px solid #21262d; }
+    [data-baseweb="select"] > div {
+        background-color: #1e222d !important;
+        border-color: #2a2e39 !important;
+        color: #d1d4dc !important;
+    }
+    [data-testid="stSegmentedControl"] { background-color: #1e222d !important; }
+    /* ---- Charts -------------------------------------------------------- */
+    [data-testid="stPlotlyChart"] {
+        background-color: #131722 !important;
+        border: 1px solid #2a2e39 !important;
+    }
+    /* ---- Data tables --------------------------------------------------- */
+    [data-testid="stDataFrame"] { border: 1px solid #2a2e39 !important; }
+    /* ---- Buttons ------------------------------------------------------- */
+    .stButton > button {
+        background-color: #2962ff !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    .stButton > button:hover { background-color: #1e53e5 !important; }
+    /* ---- Alerts -------------------------------------------------------- */
+    [data-testid="stAlert"] { border: 1px solid #2a2e39 !important; }
 """
 
 _LIGHT_CSS = """
-    .stApp { background-color: #f0f2f6 !important; }
+    /* ---- Backgrounds --------------------------------------------------- */
+    .stApp, .main { background-color: #ffffff !important; }
+    .block-container { background-color: #ffffff !important; }
+    section[data-testid="stSidebar"],
     [data-testid="stSidebar"] {
-        background-color: #ffffff !important;
-        border-right: 1px solid #e0e4ea !important;
+        background-color: #f8f9fa !important;
+        border-right: 1px solid #e0e3eb !important;
     }
-    [data-testid="stCaptionContainer"] { color: #6b7280 !important; }
-    hr { border-color: #e0e4ea !important; }
+    /* ---- Text — blanket override so no dark remnants show through ------- */
+    .stApp, .stApp p, .stApp span, .stApp div, .stApp label,
+    .stMarkdown, .stMarkdown p, .stMarkdown span,
+    section[data-testid="stSidebar"], section[data-testid="stSidebar"] * {
+        color: #131722 !important;
+    }
+    h1, h2, h3, h4, h5, h6 { color: #131722 !important; }
+    [data-testid="stCaptionContainer"] { color: #555f73 !important; }
+    hr { border-color: #e0e3eb !important; }
+    /* ---- Metric tiles -------------------------------------------------- */
     [data-testid="stMetric"] {
-        background: linear-gradient(180deg, #ffffff 0%, #f5f6f8 100%) !important;
-        border: 1px solid #dde1e7 !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
+        background-color: #f0f3fa !important;
+        border: 1px solid #e0e3eb !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
     }
-    [data-testid="stMetricLabel"] { color: #6b7280 !important; }
-    [data-testid="stMetricValue"] { color: #111827 !important; }
-    [data-testid="stMetricDelta"] { color: #374151 !important; }
+    [data-testid="stMetricLabel"] { color: #555f73 !important; }
+    [data-testid="stMetricValue"] { color: #131722 !important; }
+    [data-testid="stMetricDelta"] { color: #131722 !important; }
+    /* ---- Cards / bordered containers ----------------------------------- */
     div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%) !important;
-        border: 1px solid #dde1e7 !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.06) !important;
+        background-color: #f0f3fa !important;
+        border: 1px solid #e0e3eb !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
     }
-    [data-testid="stTabs"] [data-baseweb="tab-list"] { border-bottom: 1px solid #dde1e7 !important; }
+    /* ---- Tabs ---------------------------------------------------------- */
+    [data-testid="stTabs"] [data-baseweb="tab-list"] {
+        background-color: #ffffff !important;
+        border-bottom: 1px solid #e0e3eb !important;
+    }
+    [data-testid="stTabs"] [data-baseweb="tab"] { color: #555f73 !important; }
+    [data-testid="stTabs"] [aria-selected="true"] { color: #2962ff !important; }
+    /* ---- Inputs -------------------------------------------------------- */
     [data-testid="stTextInput"] input,
-    [data-baseweb="select"] > div { background-color: #ffffff !important; border-color: #d0d5dd !important; }
-    [data-testid="stSegmentedControl"] { background-color: #edf0f4 !important; }
-    [data-testid="stPlotlyChart"] { background-color: #ffffff !important; border: 1px solid #e0e4ea !important; }
-    [data-testid="stDataFrame"] { border: 1px solid #dde1e7 !important; }
-    .stButton > button { border: 1px solid #d0d5dd !important; }
-    [data-testid="stAlert"] { border: 1px solid #dde1e7 !important; }
+    [data-baseweb="select"] > div {
+        background-color: #ffffff !important;
+        border-color: #cccccc !important;
+        color: #131722 !important;
+    }
+    [data-testid="stSelectbox"] label { color: #131722 !important; }
+    [data-testid="stSegmentedControl"] { background-color: #f0f3fa !important; }
+    [data-testid="stRadio"] label,
+    [data-testid="stCheckbox"] label { color: #131722 !important; }
+    /* ---- Charts -------------------------------------------------------- */
+    [data-testid="stPlotlyChart"] {
+        background-color: #ffffff !important;
+        border: 1px solid #e0e3eb !important;
+    }
+    /* ---- Data tables --------------------------------------------------- */
+    [data-testid="stDataFrame"] { border: 1px solid #e0e3eb !important; }
+    [data-testid="stDataFrame"] * { color: #131722 !important; }
+    /* ---- Buttons ------------------------------------------------------- */
+    .stButton > button {
+        background-color: #2962ff !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    .stButton > button:hover { background-color: #1e53e5 !important; }
+    /* ---- Alerts -------------------------------------------------------- */
+    [data-testid="stAlert"] {
+        background-color: #f0f3fa !important;
+        border: 1px solid #e0e3eb !important;
+    }
+    [data-testid="stAlert"] * { color: #131722 !important; }
+    /* ---- BasewUI dropdowns --------------------------------------------- */
+    [data-baseweb="popover"],
+    [data-baseweb="menu"] { background-color: #ffffff !important; }
+    [data-baseweb="option"] {
+        background-color: #ffffff !important;
+        color: #131722 !important;
+    }
+    [data-baseweb="option"]:hover { background-color: #f0f3fa !important; }
 """
 
 
