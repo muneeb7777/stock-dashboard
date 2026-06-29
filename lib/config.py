@@ -278,6 +278,36 @@ _LIGHT_CSS = """
         color: #131722 !important;
     }
     [data-baseweb="option"]:hover { background-color: #f0f3fa !important; }
+    /* ---- Segmented control / timeframe buttons ------------------------- */
+    [data-testid="stSegmentedControl"] {
+        background-color: #e0e3eb !important;
+        border-radius: 8px !important;
+        padding: 2px !important;
+    }
+    [data-testid="stSegmentedControl"] label,
+    [data-testid="stSegmentedControl"] label > div,
+    [data-testid="stSegmentedControl"] button,
+    [data-testid="stSegmentedControl"] button > div,
+    [data-testid="stSegmentedControl"] [data-baseweb="button"],
+    [data-testid="stSegmentedControl"] [data-baseweb="button"] > div {
+        background-color: transparent !important;
+        color: #131722 !important;
+        box-shadow: none !important;
+    }
+    [data-testid="stSegmentedControl"] p,
+    [data-testid="stSegmentedControl"] span {
+        color: #131722 !important;
+    }
+    /* Active / selected segment */
+    [data-testid="stSegmentedControl"] [data-active="true"],
+    [data-testid="stSegmentedControl"] [aria-checked="true"],
+    [data-testid="stSegmentedControl"] [aria-pressed="true"],
+    [data-testid="stSegmentedControl"] input[type="radio"]:checked + div {
+        background-color: #ffffff !important;
+        color: #131722 !important;
+        border-radius: 6px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
+    }
     /* ---- Semantic card classes (light) --------------------------------- */
     .tv-card-bull    { background-color: #e8f5e9 !important; }
     .tv-card-bear    { background-color: #fdecea !important; }
@@ -316,8 +346,18 @@ def inject_base_style():
     """Inject structural CSS + the active color theme. Called at the top of
     every page so the theme toggle and styles are always present regardless of
     which page the user navigates to.
+
+    Theme is persisted in st.query_params["theme"] so that direct navigation,
+    page reloads, and shared URLs all restore the user's last choice without
+    requiring them to re-select it.
     """
-    # Sidebar: title + theme toggle (persists across navigation via session_state)
+    # Bootstrap session_state from the URL on every cold load / page switch.
+    # Only runs when session_state doesn't have the key yet (avoids overwriting
+    # a user's in-session change before the query param has been synced back).
+    if "theme" not in st.session_state:
+        _qp = st.query_params.get("theme", "Dark")
+        st.session_state["theme"] = _qp if _qp in ("Dark", "Light", "System") else "Dark"
+
     with st.sidebar:
         st.markdown("### 📈 Market Analyst")
         st.caption("Theme")
@@ -330,5 +370,10 @@ def inject_base_style():
         )
 
     theme = st.session_state.get("theme", "Dark")
+
+    # Keep the URL in sync so navigation and sharing preserve the choice.
+    if st.query_params.get("theme") != theme:
+        st.query_params["theme"] = theme
+
     color_css = _DARK_CSS if theme == "Dark" else (_LIGHT_CSS if theme == "Light" else "")
     st.markdown(f"<style>{_STRUCTURAL_CSS}{color_css}</style>", unsafe_allow_html=True)

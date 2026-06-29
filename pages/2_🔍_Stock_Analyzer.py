@@ -214,8 +214,12 @@ else:
 
     def style_chain(df: pd.DataFrame):
         itm = df.pop("_itm")
+        light = st.session_state.get("theme") == "Light"
 
         def highlight(row):
+            if light:
+                bg = "#d4edda" if itm.loc[row.name] else "#ffffff"
+                return [f"background-color: {bg}; color: #131722; border-color: #e0e3eb"] * len(row)
             color = "background-color: rgba(46, 204, 113, 0.12)" if itm.loc[row.name] else ""
             return [color] * len(row)
 
