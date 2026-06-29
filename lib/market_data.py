@@ -7,10 +7,68 @@ avoid hammering Yahoo Finance.
 from __future__ import annotations
 
 import datetime as dt
+import random
+import tempfile
+import time
 
 import pandas as pd
+import requests
 import streamlit as st
 import yfinance as yf
+
+# ---------------------------------------------------------------------------
+# Network helpers
+# ---------------------------------------------------------------------------
+
+# Shared session with a browser-like User-Agent reduces Yahoo Finance 429 errors.
+_YF_SESSION = requests.Session()
+_YF_SESSION.headers.update({
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    )
+})
+
+# Cache timezone data in the system temp dir so it's always writable
+# (avoids permission errors on Streamlit Cloud / read-only filesystems).
+try:
+    yf.set_tz_cache_location(tempfile.gettempdir())
+except Exception:
+    pass
+
+
+def _fetch_ticker(symbol: str, retries: int = 3) -> yf.Ticker | None:
+    """Return a yf.Ticker whose .info has successfully loaded.
+
+    Uses exponential backoff between attempts. Returns None when all
+    retries are exhausted so callers can show a user-friendly error.
+    """
+    for attempt in range(retries):
+        try:
+            tk = yf.Ticker(symbol, session=_YF_SESSION)
+            info = tk.info
+            if info and len(info) > 5:
+                return tk
+        except Exception:
+            pass
+        if attempt < retries - 1:
+            time.sleep(2 ** attempt + random.uniform(0, 1))
+    return None
+
+
+def _fetch_history(tk: yf.Ticker, retries: int = 3, **kwargs) -> pd.DataFrame:
+    """Call tk.history(**kwargs) with exponential-backoff retries."""
+    for attempt in range(retries):
+        try:
+            df = tk.history(**kwargs)
+            if df is not None and not df.empty:
+                return df
+        except Exception:
+            pass
+        if attempt < retries - 1:
+            time.sleep(2 ** attempt + random.uniform(0, 1))
+    return pd.DataFrame()
+
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -189,6 +247,7 @@ def get_quotes_bulk(tickers: tuple) -> dict:
         data = yf.download(
             tickers, period="5d", interval="15m", group_by="ticker",
             threads=True, progress=False, auto_adjust=False,
+            session=_YF_SESSION,
         )
     except Exception:
         data = None
@@ -237,33 +296,19 @@ def get_movers(universe: tuple, top_n: int = 5) -> dict:
 def get_history(ticker: str, period_label: str) -> pd.DataFrame:
     """Return OHLCV history for a ticker over the given PERIOD_MAP label."""
     cfg = PERIOD_MAP.get(period_label, PERIOD_MAP["1Y"])
-    tk = yf.Ticker(ticker)
-    try:
-        if cfg["yf_period"]:
-            df = tk.history(period=cfg["yf_period"], interval=cfg["interval"])
-        else:
-            start = dt.datetime.now() - dt.timedelta(days=cfg["days"])
-            df = tk.history(start=start, interval=cfg["interval"])
-    except Exception:
-        df = pd.DataFrame()
-
-    if df is None:
-        df = pd.DataFrame()
-    return df
+    tk = yf.Ticker(ticker, session=_YF_SESSION)
+    if cfg["yf_period"]:
+        return _fetch_history(tk, period=cfg["yf_period"], interval=cfg["interval"])
+    start = dt.datetime.now() - dt.timedelta(days=cfg["days"])
+    return _fetch_history(tk, start=start, interval=cfg["interval"])
 
 
 @st.cache_data(ttl=300, show_spinner=False)
 def get_history_tf(ticker: str, timeframe: str) -> pd.DataFrame:
     """Return OHLCV history for a ticker over the given TIMEFRAMES label."""
     cfg = TIMEFRAMES.get(timeframe, TIMEFRAMES["1d"])
-    tk = yf.Ticker(ticker)
-    try:
-        df = tk.history(period=cfg["yf_period"], interval=cfg["interval"])
-    except Exception:
-        df = pd.DataFrame()
-
-    if df is None:
-        df = pd.DataFrame()
+    tk = yf.Ticker(ticker, session=_YF_SESSION)
+    df = _fetch_history(tk, period=cfg["yf_period"], interval=cfg["interval"])
 
     if not df.empty and cfg["resample"]:
         df = df.resample(cfg["resample"]).agg({
@@ -277,12 +322,12 @@ def get_history_tf(ticker: str, timeframe: str) -> pd.DataFrame:
 def get_prev_close(ticker: str) -> float | None:
     """Return the previous trading day's close - used as 1D chart baseline."""
     try:
-        tk = yf.Ticker(ticker)
+        tk = yf.Ticker(ticker, session=_YF_SESSION)
         fast = tk.fast_info
         pc = fast.get("previousClose") or fast.get("previous_close")
         if pc:
             return float(pc)
-        hist = tk.history(period="5d", interval="1d")
+        hist = _fetch_history(tk, period="5d", interval="1d")
         if len(hist) >= 2:
             return float(hist["Close"].iloc[-2])
         if len(hist) == 1:
@@ -331,11 +376,10 @@ def get_extended_hours_data(ticker: str) -> dict | None:
     else:
         return None
 
-    try:
-        tk = yf.Ticker(ticker)
-        full_info = tk.info
-    except Exception:
+    tk = _fetch_ticker(ticker)
+    if tk is None:
         return None
+    full_info = tk.info
 
     prev_close = (
         full_info.get("regularMarketPreviousClose")
@@ -349,7 +393,7 @@ def get_extended_hours_data(ticker: str) -> dict | None:
 
     # Primary: 1-minute bars with prepost=True for price + volume + timestamp
     try:
-        bars = tk.history(period="1d", interval="1m", prepost=True)
+        bars = _fetch_history(tk, period="1d", interval="1m", prepost=True)
         if bars is not None and not bars.empty:
             if bars.index.tz is None:
                 bars.index = bars.index.tz_localize("UTC").tz_convert(et)
@@ -409,21 +453,17 @@ def get_history_bulk(tickers: tuple, period_label: str) -> dict:
 
 @st.cache_data(ttl=300, show_spinner=False)
 def is_etf(ticker: str) -> bool:
-    try:
-        info = yf.Ticker(ticker).info
-        return (info.get("quoteType") or "").upper() == "ETF"
-    except Exception:
+    tk = _fetch_ticker(ticker)
+    if tk is None:
         return False
+    return (tk.info.get("quoteType") or "").upper() == "ETF"
 
 
 @st.cache_data(ttl=300, show_spinner=False)
 def get_stock_fundamentals(ticker: str) -> dict:
     """Return a curated dict of fundamentals/metadata for a stock."""
-    tk = yf.Ticker(ticker)
-    try:
-        info = tk.info
-    except Exception:
-        info = {}
+    tk = _fetch_ticker(ticker)
+    info = tk.info if tk is not None else {}
 
     return {
         "ticker": ticker,
@@ -475,17 +515,14 @@ def get_stock_fundamentals(ticker: str) -> dict:
 @st.cache_data(ttl=300, show_spinner=False)
 def get_etf_details(ticker: str) -> dict:
     """Return ETF metadata: expense ratio, sector weights, top holdings, returns."""
-    tk = yf.Ticker(ticker)
-    try:
-        info = tk.info
-    except Exception:
-        info = {}
+    tk = _fetch_ticker(ticker)
+    info = tk.info if tk is not None else {}
 
     sector_weights = {}
     top_holdings = []
     try:
-        funds = tk.funds_data
-        sw = funds.sector_weightings
+        funds = tk.funds_data if tk is not None else None
+        sw = funds.sector_weightings if funds is not None else None
         if sw:
             sector_weights = sw
         th = funds.top_holdings
@@ -523,7 +560,7 @@ def get_etf_details(ticker: str) -> dict:
 def get_option_expirations(ticker: str) -> tuple:
     """Return available option expiration date strings (YYYY-MM-DD)."""
     try:
-        return tuple(yf.Ticker(ticker).options)
+        return tuple(yf.Ticker(ticker, session=_YF_SESSION).options)
     except Exception:
         return ()
 
@@ -532,7 +569,7 @@ def get_option_expirations(ticker: str) -> tuple:
 def get_option_chain(ticker: str, expiration: str) -> dict:
     """Return {"calls": DataFrame, "puts": DataFrame} for the given expiration."""
     try:
-        chain = yf.Ticker(ticker).option_chain(expiration)
+        chain = yf.Ticker(ticker, session=_YF_SESSION).option_chain(expiration)
         return {"calls": chain.calls, "puts": chain.puts}
     except Exception:
         return {"calls": pd.DataFrame(), "puts": pd.DataFrame()}
@@ -554,11 +591,8 @@ def get_valuation_data(ticker: str) -> dict:
         annual_income     – annual income statement DataFrame
         price_history     – 2-year daily OHLCV DataFrame
     """
-    tk = yf.Ticker(ticker)
-    try:
-        info = tk.info
-    except Exception:
-        info = {}
+    tk = _fetch_ticker(ticker)
+    info = tk.info if tk is not None else {}
 
     def _safe(fn):
         try:
@@ -567,11 +601,22 @@ def get_valuation_data(ticker: str) -> dict:
         except Exception:
             return pd.DataFrame()
 
+    if tk is None:
+        empty = pd.DataFrame()
+        return {
+            "info": info,
+            "quarterly_income": empty,
+            "quarterly_cashflow": empty,
+            "quarterly_balance": empty,
+            "annual_income": empty,
+            "price_history": empty,
+        }
+
     return {
         "info": info,
         "quarterly_income": _safe(lambda: tk.quarterly_income_stmt),
         "quarterly_cashflow": _safe(lambda: tk.quarterly_cashflow),
         "quarterly_balance": _safe(lambda: tk.quarterly_balance_sheet),
         "annual_income": _safe(lambda: tk.income_stmt),
-        "price_history": _safe(lambda: tk.history(period="2y", interval="1d")),
+        "price_history": _safe(lambda: _fetch_history(tk, period="2y", interval="1d")),
     }
