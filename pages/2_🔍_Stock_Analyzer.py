@@ -47,14 +47,16 @@ if is_etf(ticker):
 
 try:
     fund = get_stock_fundamentals(ticker)
-except Exception as e:
-    st.error(f"Error loading {ticker}: {type(e).__name__}: {str(e)}")
-    render_footer()
+except Exception:
+    st.error("Yahoo Finance is rate-limiting right now. This is temporary — try again in 30 seconds.")
+    if st.button("Retry"):
+        st.rerun()
     st.stop()
 
 if not fund.get("price"):
-    st.error(f"Error loading {ticker}: no price data returned (ticker may be invalid or delisted)")
-    render_footer()
+    st.error("Yahoo Finance is rate-limiting right now. This is temporary — try again in 30 seconds.")
+    if st.button("Retry"):
+        st.rerun()
     st.stop()
 
 # ---------------------------------------------------------------------------

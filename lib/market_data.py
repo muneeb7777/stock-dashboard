@@ -33,27 +33,20 @@ except Exception:
     pass
 
 
-def _fetch_ticker(symbol: str, retries: int = 3) -> yf.Ticker | None:
+def _fetch_ticker(symbol: str, retries: int = 5) -> yf.Ticker | None:
     for attempt in range(retries):
         try:
             session = requests.Session()
             session.headers.update({
-                "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/120.0.0.0 Safari/537.36"
-                ),
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
             })
             tk = yf.Ticker(symbol, session=session)
             info = tk.info
             if info and len(info) > 5:
                 return tk
-        except Exception as e:
-            if "RateLimit" in type(e).__name__ or "rate" in str(e).lower():
-                time.sleep(2 ** attempt + random.uniform(1, 3))
-                continue
-            raise e
-    raise Exception(f"Rate limited after {retries} attempts for {symbol}")
+        except Exception:
+            time.sleep((2 ** attempt) + random.uniform(2, 5))
+    return None
 
 
 def _fetch_history(tk: yf.Ticker, retries: int = 3, **kwargs) -> pd.DataFrame:
@@ -292,7 +285,7 @@ def get_movers(universe: tuple, top_n: int = 5) -> dict:
 # History
 # ---------------------------------------------------------------------------
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def get_history(ticker: str, period_label: str) -> pd.DataFrame:
     """Return OHLCV history for a ticker over the given PERIOD_MAP label."""
     cfg = PERIOD_MAP.get(period_label, PERIOD_MAP["1Y"])
@@ -303,7 +296,7 @@ def get_history(ticker: str, period_label: str) -> pd.DataFrame:
     return _fetch_history(tk, start=start, interval=cfg["interval"])
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def get_history_tf(ticker: str, timeframe: str) -> pd.DataFrame:
     """Return OHLCV history for a ticker over the given TIMEFRAMES label."""
     cfg = TIMEFRAMES.get(timeframe, TIMEFRAMES["1d"])
@@ -318,7 +311,7 @@ def get_history_tf(ticker: str, timeframe: str) -> pd.DataFrame:
     return df
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def get_prev_close(ticker: str) -> float | None:
     """Return the previous trading day's close - used as 1D chart baseline."""
     try:
@@ -441,7 +434,7 @@ def get_extended_hours_data(ticker: str) -> dict | None:
     }
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def get_history_bulk(tickers: tuple, period_label: str) -> dict:
     """Return {ticker: DataFrame} of history for many tickers."""
     return {t: get_history(t, period_label) for t in tickers}
@@ -451,7 +444,7 @@ def get_history_bulk(tickers: tuple, period_label: str) -> dict:
 # Fundamentals / ETF details
 # ---------------------------------------------------------------------------
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def is_etf(ticker: str) -> bool:
     tk = _fetch_ticker(ticker)
     if tk is None:
@@ -459,7 +452,7 @@ def is_etf(ticker: str) -> bool:
     return (tk.info.get("quoteType") or "").upper() == "ETF"
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def get_stock_fundamentals(ticker: str) -> dict:
     """Return a curated dict of fundamentals/metadata for a stock."""
     tk = _fetch_ticker(ticker)
@@ -512,7 +505,7 @@ def get_stock_fundamentals(ticker: str) -> dict:
     }
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def get_etf_details(ticker: str) -> dict:
     """Return ETF metadata: expense ratio, sector weights, top holdings, returns."""
     tk = _fetch_ticker(ticker)
@@ -556,7 +549,7 @@ def get_etf_details(ticker: str) -> dict:
 # Options chain
 # ---------------------------------------------------------------------------
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def get_option_expirations(ticker: str) -> tuple:
     """Return available option expiration date strings (YYYY-MM-DD)."""
     try:
@@ -565,7 +558,7 @@ def get_option_expirations(ticker: str) -> tuple:
         return ()
 
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def get_option_chain(ticker: str, expiration: str) -> dict:
     """Return {"calls": DataFrame, "puts": DataFrame} for the given expiration."""
     try:
@@ -579,7 +572,7 @@ def get_option_chain(ticker: str, expiration: str) -> dict:
 # Valuation data
 # ---------------------------------------------------------------------------
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=3600, show_spinner=False)
 def get_valuation_data(ticker: str) -> dict:
     """Fetch raw data needed for the Valuation section.
 
